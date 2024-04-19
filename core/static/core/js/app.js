@@ -1,0 +1,2136 @@
+document.addEventListener('DOMContentLoaded', function() {
+	if(window.location.pathname.split('/')[1] === 'clientes') {
+        
+		// Agregar cliente
+		$('#btn_cliente_modal_agregar').on('click', function() {
+			$('#agregarClienteModal').modal('show');
+		});
+
+		$('#btn_cliente_agregar_registrar').on('click', function() {
+
+			const cliente = $('#form_cliente_agregar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
+			
+			fetch('/api/clientes/', {
+		    	method: 'POST',
+		    	body: JSON.stringify(cliente)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+				if(!result.error) {
+					$('#form_cliente_agregar').get(0).reset();
+					fill_table('clientes');
+	
+					$('#agregarClienteModal').modal('hide');
+	
+					bootstrapAlert('Cliente registrado!', 'success');
+				}else if(result.error = "IntegrityError") {
+						bootstrapAlert('Cédula duplicada. La cédula ingresada ya existe.', 'warning');
+				}
+				else {
+					bootstrapAlert('Error al registrar el cliente!', 'danger');
+				}
+		    })
+		    .catch(function(error) {
+		    	console.log('Error: ' + error);
+				bootstrapAlert('Error en la conexión o respuesta del servidor.', 'danger');
+		    });
+		});
+
+		
+
+		// Modificar cliente
+		$('#form_cliente_modificar').submit(function(e) {
+			cliente_id = document.querySelector('#cliente_modificar_id').value;
+			form_modificar_data = $('#form_cliente_modificar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
+			fetch('/api/clientes/' + cliente_id, {
+		    	method: 'PUT',
+		    	body: JSON.stringify(form_modificar_data)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+		    	if(!result.error) {
+		    		bootstrapAlert('Cliente modificado con éxito', 'success');
+		    		$('#modificarClienteModal').modal('hide');
+		    		this.reset();
+
+		    		setTimeout(() => {
+		    			fill_table('clientes');
+		    		}, 100);
+				} else if(result.error == 'No permission.') {
+					$('#modificarClienteModal').modal('hide');
+					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de clientes', 'info');
+		    	} else if(result.error == 'DoesNotExist.') {
+		    		$('#modificarClienteModal').modal('hide');
+		    		bootstrapAlert('Cliente no está registrado', 'warning');
+		    	} else if(result.error == 'CedulaNotUnique.') {
+		    		bootstrapAlert('Ya existe cliente registrado con esta cédula de identidad', 'warning');
+		    	} else if(result.error == 'ValueError.') {
+		    		bootstrapAlert('Ingrese todos los campos correctamente', 'warning');
+		    	} else {
+		    		bootstrapAlert('Ha ocurrido un error al modificar la información del cliente!', 'warning');
+		    	}
+		    })
+		    .catch(function(error) {
+		    	bootstrapAlert('Ha ocurrido un error al modificar la información del cliente!', 'warning');
+		    	console.log('Error: ' + error);
+		    });
+
+			e.preventDefault();
+
+		});
+
+		// Modal eliminar cliente
+		$('#tabla_clientes tbody').off('click', '.btn_cliente_modal_eliminar');
+		$('#tabla_clientes tbody').on('click', '.btn_cliente_modal_eliminar', function () {
+			row = $(this).parents('tr')[0];
+			cliente_id = row.cells[0].innerHTML;
+			document.querySelector('#cliente_eliminar_id').value = cliente_id;
+			$('#eliminarClienteModal').modal('show');
+		});
+
+		// Eliminar cliente
+		$('#btn_cliente_eliminar').on('click', function() {
+			cliente_id = document.querySelector('#cliente_eliminar_id').value;
+
+			fetch('/api/clientes/' + cliente_id, {
+		    	method: 'DELETE',
+		    	body: JSON.stringify(cliente_id)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+		    	if(!result.error) {
+		    		$('#eliminarClienteModal').modal('hide');
+		    		bootstrapAlert('Cliente eliminado correctamente', 'success');
+
+		    		setTimeout(() => {
+						fill_table('clientes');
+					}, 100);
+		    	} else if(result.error == 'DoesNotExist.') {
+		    		$('#eliminarClienteModal').modal('hide');
+		    		bootstrapAlert('Cliente no está registrado', 'warning');
+		    	}else if(result.error == 'No permission.') {
+		    		$('#eliminarClienteModal').modal('hide');
+		    		bootstrapAlert('Tu cuenta no tiene permisos para eliminar clientes', 'info');
+		    	}else {
+		    		bootstrapAlert('Ha ocurrido un error al eliminar cliente', 'error');
+		    	}
+				
+		    	 
+		    })
+		    .catch(function(error) {
+		    	bootstrapAlert('Ha ocurrido un error al eliminar cliente', 'error');
+		    	console.log('Error: ' + error);
+		    });
+		});
+
+		// Modal detalles cliente
+		$('#tabla_clientes tbody').off('click', '.btn_cliente_modal_detalles');
+		$('#tabla_clientes tbody').on('click', '.btn_cliente_modal_detalles', function () {
+			row = $(this).parents('tr')[0];
+			cliente_id = row.cells[0].innerHTML;
+
+			if(cliente_id) {
+				fetch('/api/clientes/' + cliente_id)
+				.then(response => response.json())
+				.then(cliente => {
+					console.log(cliente)
+					document.querySelector('#cliente_detalles_cedula').value = cliente.cedula;
+					document.querySelector('#cliente_detalles_num_tlf').value = cliente.num_tlf;
+					document.querySelector('#cliente_detalles_nombres').value = cliente.names;
+					document.querySelector('#cliente_detalles_apellidos').value = cliente.last_names;
+					document.querySelector('#cliente_detalles_email').value = cliente.email;
+					document.querySelector('#cliente_detalles_nacimiento').value = cliente.fecha_nacimiento;
+					document.querySelector('#cliente_detalles_edad').value = cliente.age;
+					document.querySelector('#cliente_detalles_direccion').value = cliente.direccion;
+				})
+				.catch(function(error) {
+					bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'error');
+					console.log('Error buscar cliente: ' + error);
+				});
+
+				$('#detallesClienteModal').modal('show');
+			} else {
+				bootstrapAlert('No se ha seleccionado ningún cliente', 'info');
+			}
+		});
+
+		// Modal modificar cliente
+		$('#tabla_clientes tbody').off('click', '.btn_cliente_modal_modificar');
+		$('#tabla_clientes tbody').on('click', '.btn_cliente_modal_modificar', function () {
+			row = $(this).parents('tr')[0];
+			cliente_id = row.cells[0].innerHTML;
+			document.querySelector('#cliente_modificar_id').value = cliente_id;
+
+			if(cliente_id) {
+				fetch('/api/clientes/' + cliente_id)
+				.then(response => response.json())
+				.then(cliente => {
+					document.querySelector('#cliente_modificar_cedula').value = cliente.cedula;
+					document.querySelector('#cliente_modificar_num_tlf').value = cliente.num_tlf;
+					document.querySelector('#cliente_modificar_nombres').value = cliente.names;
+					document.querySelector('#cliente_modificar_apellidos').value = cliente.last_names;
+					document.querySelector('#cliente_modificar_email').value = cliente.email;
+					document.querySelector('#cliente_modificar_nacimiento').value = cliente.fecha_nacimiento;
+					document.querySelector('#cliente_modificar_direccion').value = cliente.direccion;
+
+				})
+				.catch(function(error) {
+					bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'error');
+				});
+
+				$('#modificarClienteModal').modal('show');
+			} else {
+				bootstrapAlert('No se ha seleccionado ningún cliente', 'info');
+			}
+
+			$('#modificarClienteModal').modal('show');
+		});
+
+
+
+        fill_table('clientes');
+	}
+
+	if(window.location.pathname.split('/')[1] === 'usuarios') {
+        
+		// Agregar usuario
+		$('#btn_usuario_modal_agregar').on('click', function() {
+			$('#agregarUsuarioModal').modal('show');
+		});
+
+		$('#btn_usuario_agregar_registrar').on('click', function() {
+
+			const usuario = $('#form_usuario_agregar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
+			
+			fetch('/api/usuarios/', {
+		    	method: 'POST',
+		    	body: JSON.stringify(usuario)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+				if(!result.error) {
+					$('#form_usuario_agregar').get(0).reset();
+					fill_table('usuarios');
+	
+					$('#agregarUsuarioModal').modal('hide');
+	
+					bootstrapAlert(result.message, 'success');
+				}else if(result.error == 'No permission.') {
+					$('#modificarUsuarioModal').modal('hide');
+					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de usuarios', 'info');
+				}else if(result.error = "IntegrityError") {
+						bootstrapAlert('Cédula duplicada. La cédula ingresada ya existe.', 'warning');
+				}else if(result.error = "PasswordsNotMatch") {Cédula
+					bootstrapAlert('Las contraseñas no coinciden.', 'warning');
+			}
+				else {
+					bootstrapAlert('Error al registrar el usuario!', 'danger');
+				}
+		    })
+		    .catch(function(error) {
+		    	console.log('Error: ' + error);
+				bootstrapAlert('Error en la conexión o respuesta del servidor.', 'danger');
+		    });
+		});
+
+		
+		// Modal modificar Usuario
+		$('#tabla_usuarios tbody').off('click', '.btn_usuario_modal_modificar');
+		$('#tabla_usuarios tbody').on('click', '.btn_usuario_modal_modificar', function () {
+
+			row = $(this).parents('tr')[0];
+			usuario_id = row.cells[0].innerHTML;
+			document.querySelector('#usuario_modificar_id').value = usuario_id;
+
+			if(usuario_id) {
+				fetch('/api/usuarios/' + usuario_id)
+				.then(response => response.json())
+				.then(usuario => {
+					document.querySelector('#usuario_modificar_cedula').value = usuario.cedula;
+					document.querySelector('#usuario_modificar_username').value = usuario.username;
+					document.querySelector('#usuario_modificar_nombres').value = usuario.names;
+					document.querySelector('#usuario_modificar_apellidos').value = usuario.last_names;
+					document.querySelector('#usuario_modificar_num_tlf').value = usuario.num_tlf;
+					document.querySelector('#usuario_modificar_email').value = usuario.email;
+					document.querySelector('#usuario_modificar_rol').value = usuario.rol;
+
+				})
+				.catch(function(error) {
+					bootstrapAlert('Ha ocurrido un error al buscar el usuario', 'error');
+				});
+
+				$('#modificarUsuarioModal').modal('show');
+			} else {
+				bootstrapAlert('No se ha seleccionado ningún usuario', 'info');
+			}
+
+			$('#modificarUsuarioModal').modal('show');
+		});
+
+		// Modificar usuario
+		$('#form_usuario_modificar').submit(function(e) {
+			usuario_id = document.querySelector('#usuario_modificar_id').value;
+			form_modificar_data = $('#form_usuario_modificar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
+			fetch('/api/usuarios/' + usuario_id, {
+		    	method: 'PUT',
+		    	body: JSON.stringify(form_modificar_data)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+		    	if(!result.error) {
+		    		bootstrapAlert('Usuario modificado con éxito', 'success');
+		    		$('#modificarUsuarioModal').modal('hide');
+		    		this.reset();
+
+		    		setTimeout(() => {
+		    			fill_table('usuarios');
+		    		}, 100);
+				} else if(result.error == 'No permission.') {
+					$('#modificarUsuarioModal').modal('hide');
+					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de usuarios', 'info');
+		    	} else if(result.error == 'DoesNotExist.') {
+		    		$('#error').modal('hide');
+		    		bootstrapAlert('Usuario no está registrado', 'warning');
+		    	} else if(result.error == 'CedulaNotUnique.') {
+		    		bootstrapAlert('Ya existe usuario registrado con esta cédula de identidad', 'warning');
+		    	} else if(result.error == 'ValueError.') {
+		    		bootstrapAlert('Ingrese todos los campos correctamente', 'warning');
+		    	} else {
+		    		bootstrapAlert('Ha ocurrido un error al modificar la información del usuario!', 'warning');
+		    	}
+		    })
+		    .catch(function(error) {
+		    	bootstrapAlert('Ha ocurrido un error al modificar la información del usuario!', 'warning');
+		    	console.log('Error: ' + error);
+		    });
+
+			e.preventDefault();
+
+		});
+
+		// Modal eliminar usuario
+		$('#tabla_usuarios tbody').off('click', '.btn_usuario_modal_eliminar');
+		$('#tabla_usuarios tbody').on('click', '.btn_usuario_modal_eliminar', function () {
+			row = $(this).parents('tr')[0];
+			usuario_id = row.cells[0].innerHTML;
+			document.querySelector('#usuario_eliminar_id').value = usuario_id;
+			$('#eliminarUsuarioModal').modal('show');
+		});
+
+		// Eliminar usuario
+		$('#btn_usuario_eliminar').on('click', function() {
+			usuario_id = document.querySelector('#usuario_eliminar_id').value;
+
+			fetch('/api/usuarios/' + usuario_id, {
+		    	method: 'DELETE',
+		    	body: JSON.stringify(usuario_id)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+		    	if(!result.error) {
+		    		$('#eliminarUsuarioModal').modal('hide');
+		    		bootstrapAlert('Usuario eliminado correctamente', 'success');
+
+		    		setTimeout(() => {
+						fill_table('usuarios');
+					}, 100);
+		    	} else if(result.error == 'DoesNotExist.') {
+		    		$('#eliminarUsuarioModal').modal('hide');
+		    		bootstrapAlert('Usuario no está registrado', 'warning');
+		    	} else if(result.error == 'No permission.') {
+		    		$('#eliminarUsuarioModal').modal('hide');
+		    		bootstrapAlert('Tu cuenta no tiene permisos para eliminar usuarios', 'info');
+		    	} 
+				else {
+		    		bootstrapAlert('Ha ocurrido un error al eliminar usuario', 'error');
+		    	}
+		    	
+		    })
+		    .catch(function(error) {
+		    	bootstrapAlert('Ha ocurrido un error al eliminar usuario', 'error');
+		    	console.log('Error: ' + error);
+		    });
+		});
+
+		// Modal detalles usuario
+		$('#tabla_usuarios tbody').off('click', '.btn_usuario_modal_detalles');
+		$('#tabla_usuarios tbody').on('click', '.btn_usuario_modal_detalles', function () {
+			row = $(this).parents('tr')[0];
+			usuario_id = row.cells[0].innerHTML;
+
+			if(usuario_id) {
+				fetch('/api/usuarios/' + usuario_id)
+				.then(response => response.json())
+				.then(usuario => {
+					document.querySelector('#usuario_detalles_cedula').value = usuario.cedula;
+					document.querySelector('#usuario_detalles_username').value = usuario.username;
+					document.querySelector('#usuario_detalles_nombres').value = usuario.names;
+					document.querySelector('#usuario_detalles_apellidos').value = usuario.last_names;
+					document.querySelector('#usuario_detalles_num_tlf').value = usuario.num_tlf;
+					document.querySelector('#usuario_detalles_email').value = usuario.email;
+					document.querySelector('#usuario_detalles_rol').value = usuario.rol;
+
+				})
+				.catch(function(error) {
+					bootstrapAlert('Ha ocurrido un error al buscar el usuario', 'error');
+					console.log('Error buscar usuario: ' + error);
+				});
+
+				$('#detallesUsuarioModal').modal('show');
+			} else {
+				bootstrapAlert('No se ha seleccionado ningún usuario', 'info');
+			}
+		});
+
+        fill_table('usuarios');
+	}
+
+	if(window.location.pathname.split('/')[1] === 'proveedores') {
+        
+		// Agregar proveedor
+		$('#btn_proveedor_modal_agregar').on('click', function() {
+			$('#agregarProveedorModal').modal('show');
+		});
+
+		$('#btn_proveedor_agregar_registrar').on('click', function() {
+
+			const proveedor = $('#form_proveedor_agregar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
+			fetch('/api/proveedores/', {
+		    	method: 'POST',
+		    	body: JSON.stringify(proveedor)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+				if(!result.error) {
+					$('#form_proveedor_agregar').get(0).reset();
+					fill_table('proveedores');
+	
+					$('#agregarProveedorModal').modal('hide');
+					bootstrapAlert('Proveedor registrado!', 'success');
+
+				}else if(result.error = "IntegrityError") {
+					bootstrapAlert('RIF duplicado. El RIF ingresado ya existe.', 'warning');
+				}
+				 else {
+					bootstrapAlert('Error al registrar el proveedor!', 'danger');
+				}
+		    })
+		    .catch(function(error) {
+		    	console.log('Error: ' + error);
+				bootstrapAlert('Error en la conexión o respuesta del servidor.', 'danger');
+		    });
+		});
+
+		// Modal modificar proveedor
+		$('#tabla_proveedores tbody').off('click', '.btn_proveedor_modal_modificar');
+		$('#tabla_proveedores tbody').on('click', '.btn_proveedor_modal_modificar', function () {
+			row = $(this).parents('tr')[0];
+			proveedor_id = row.cells[0].innerHTML;
+			document.querySelector('#proveedor_modificar_id').value = proveedor_id;
+
+			if(proveedor_id) {
+				fetch('/api/proveedores/' + proveedor_id)
+				.then(response => response.json())
+				.then(proveedor => {
+					document.querySelector('#proveedor_modificar_rif').value = proveedor.rif;
+					document.querySelector('#proveedor_modificar_num_tlf').value = proveedor.num_tlf;
+					document.querySelector('#proveedor_modificar_nombres').value = proveedor.names;
+					document.querySelector('#proveedor_modificar_apellidos').value = proveedor.last_names;
+					document.querySelector('#proveedor_modificar_email').value = proveedor.email;
+					document.querySelector('#proveedor_modificar_nacimiento').value = proveedor.fecha_nacimiento;
+					document.querySelector('#proveedor_modificar_direccion').value = proveedor.direccion;
+
+				})
+				.catch(function(error) {
+					bootstrapAlert('Ha ocurrido un error al buscar el proveedor', 'error');
+				});
+
+				$('#modificarProveedorModal').modal('show');
+			} else {
+				bootstrapAlert('No se ha seleccionado ningún proveedor', 'info');
+			}
+
+			$('#modificarProveedorModal').modal('show');
+		});
+
+		// Modificar proveedor
+		$('#form_proveedor_modificar').submit(function(e) {
+			proveedor_id = document.querySelector('#proveedor_modificar_id').value;
+			form_modificar_data = $('#form_proveedor_modificar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
+			fetch('/api/proveedores/' + proveedor_id, {
+		    	method: 'PUT',
+		    	body: JSON.stringify(form_modificar_data)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+		    	if(!result.error) {
+		    		bootstrapAlert('Proveedor modificado con éxito', 'success');
+		    		$('#modificarProveedorModal').modal('hide');
+		    		this.reset();
+
+		    		setTimeout(() => {
+		    			fill_table('proveedores');
+		    		}, 100);
+				} else if(result.error == 'No permission.') {
+					$('#modificarProveedorModal').modal('hide');
+					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de los proveedores', 'info');
+		    	} else if(result.error == 'DoesNotExist.') {
+		    		$('#modificarProveedorModal').modal('hide');
+		    		bootstrapAlert('Proveedor no está registrado', 'warning');
+		    	} else if(result.error == 'RifNotUnique.') {
+		    		bootstrapAlert('Ya existe proveedor registrado con este Rif', 'warning');
+		    	} else if(result.error == 'ValueError.') {
+		    		bootstrapAlert('Ingrese todos los campos correctamente', 'warning');
+		    	} else {
+		    		bootstrapAlert('Ha ocurrido un error al modificar la información del proveedor!', 'warning');
+		    	}
+		    })
+		    .catch(function(error) {
+		    	bootstrapAlert('Ha ocurrido un error al modificar la información del proveedor!', 'warning');
+		    	console.log('Error: ' + error);
+		    });
+
+			e.preventDefault();
+
+		});
+
+		// Modal eliminar proveedor
+		$('#tabla_proveedores tbody').off('click', '.btn_proveedor_modal_eliminar');
+		$('#tabla_proveedores tbody').on('click', '.btn_proveedor_modal_eliminar', function () {
+			row = $(this).parents('tr')[0];
+			proveedor_id = row.cells[0].innerHTML;
+			document.querySelector('#proveedor_eliminar_id').value = proveedor_id;
+			$('#eliminarProveedorModal').modal('show');
+		});
+
+		// Eliminar proveedor
+		$('#btn_proveedor_eliminar').on('click', function() {
+			proveedor_id = document.querySelector('#proveedor_eliminar_id').value;
+
+			fetch('/api/proveedores/' + proveedor_id, {
+		    	method: 'DELETE',
+		    	body: JSON.stringify(proveedor_id)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+		    	if(!result.error) {
+		    		$('#eliminarProveedorModal').modal('hide');
+		    		bootstrapAlert('Proveedor eliminado correctamente', 'success');
+
+		    		setTimeout(() => {
+						fill_table('proveedores');
+					}, 100);
+		    	} else if(result.error == 'DoesNotExist.') {
+		    		$('#eliminarProveedorModal').modal('hide');
+		    		bootstrapAlert('Proveedor no está registrado', 'warning');
+		    	}else if(result.error == 'No permission.') {
+		    		$('#eliminarClienteModal').modal('hide');
+		    		bootstrapAlert('Tu cuenta no tiene permisos para eliminar proveedores', 'info');
+		    	}else {
+		    		bootstrapAlert('Ha ocurrido un error al eliminar el proveedor', 'error');
+		    	}
+				
+		    	 
+		    })
+		    .catch(function(error) {
+		    	bootstrapAlert('Ha ocurrido un error al eliminar cliente', 'error');
+		    	console.log('Error: ' + error);
+		    });
+		});
+
+		// Modal detalles cliente
+		$('#tabla_proveedores tbody').off('click', '.btn_proveedor_modal_detalles');
+		$('#tabla_proveedores tbody').on('click', '.btn_proveedor_modal_detalles', function () {
+			row = $(this).parents('tr')[0];
+			proveedor_id = row.cells[0].innerHTML;
+
+			if(proveedor_id) {
+				fetch('/api/proveedores/' + proveedor_id)
+				.then(response => response.json())
+				.then(proveedor => {
+					document.querySelector('#proveedor_detalles_rif').value = proveedor.rif;
+					document.querySelector('#proveedor_detalles_num_tlf').value = proveedor.num_tlf;
+					document.querySelector('#proveedor_detalles_nombres').value = proveedor.names;
+					document.querySelector('#proveedor_detalles_apellidos').value = proveedor.last_names;
+					document.querySelector('#proveedor_detalles_email').value = proveedor.email;
+					document.querySelector('#proveedor_detalles_nacimiento').value = proveedor.fecha_nacimiento;
+					document.querySelector('#proveedor_detalles_edad').value = proveedor.age;
+					document.querySelector('#proveedor_detalles_direccion').value = proveedor.direccion;
+				})
+				.catch(function(error) {
+					bootstrapAlert('Ha ocurrido un error al buscar el proveedor', 'error');
+					console.log('Error buscar el proveedor: ' + error);
+				});
+
+				$('#detallesProveedorModal').modal('show');
+			} else {
+				bootstrapAlert('No se ha seleccionado ningún proveedor', 'info');
+			}
+		});
+
+        fill_table('proveedores');
+	}
+	
+	if(window.location.pathname.split('/')[1] === 'productos') {
+		$('#btn_producto_modal_agregar').on('click', function() {
+			const proveedor_input = document.querySelector('#producto_agregar_proveedor');
+			proveedor_input.innerHTML = '';
+
+			var opt = document.createElement('option');
+			opt.value = "";
+			opt.innerHTML = "Seleccionar proveedor";
+			opt.setAttribute("selected", "selected");
+			proveedor_input.appendChild(opt);
+
+			fetch('/api/proveedores/')
+			.then(response => response.json())
+			.then(data => {
+				console.log(data)
+				data.forEach(proveedor => {
+					var opt = document.createElement('option');
+					opt.value = proveedor.rif;
+					opt.innerHTML = proveedor.names;
+					proveedor_input.appendChild(opt);
+				});
+			});
+			
+			$('#agregarProductoModal').modal('show');
+			});
+
+		$('#btn_producto_agregar_detalles').on('click', () => {
+			const producto_nombre = $('#producto_agregar_nombre').val();
+			const producto_tipo = $('#producto_agregar_tipo').val();
+			const producto_proveedor = $('#producto_agregar_proveedor').val();
+
+			if(!producto_nombre) {
+				bootstrapAlert('Debe ingresar nombre de producto!', 'warning'); return;
+			}
+
+			if(!producto_tipo) {
+				bootstrapAlert('Debe ingresar tipo de producto!', 'warning'); return;
+			}
+			
+			if(!producto_proveedor) {
+				bootstrapAlert('Debe ingresar proveedor de producto!', 'warning'); return;
+			}
+
+			$('#agregarProductoModal').modal('hide');
+
+			if(producto_tipo == '1') {
+				$('#agregarProductoInventarioModal').modal('show');
+			} else if(producto_tipo == '2') {
+				$('#agregarDetallesCauchoModal').modal('show');
+			} else if(producto_tipo == '3') {
+				$('#agregarDetallesLubricanteModal').modal('show');
+			}
+		});
+
+		$('#btn_producto_agregar_inventario_caucho').on('click', function() {
+			const caucho_marca = $('#producto_agregar_caucho_marca').val();
+			const caucho_medidas = $('#producto_agregar_caucho_medidas').val();
+			const caucho_calidad = $('#producto_agregar_caucho_calidad').val();
+			const caucho_fabricacion = $('#producto_agregar_caucho_fabricacion').val();
+
+			if(!caucho_marca || !caucho_medidas || !caucho_calidad || !caucho_fabricacion) {
+				bootstrapAlert('Debe ingresar toda la información del caucho!', 'warning'); return;
+			}
+
+			$('#agregarProductoModal').modal('hide');
+			$('#agregarDetallesCauchoModal').modal('hide');
+			$('#agregarProductoInventarioModal').modal('show');
+		});
+		
+		$('#btn_producto_agregar_inventario_lubricante').on('click', function() {
+			const lubricante_marca = $('#producto_agregar_lubricante_marca').val();
+			const lubricante_vizcosidad = $('#producto_agregar_lubricante_vizcosidad').val();
+			const lubricante_tipo = $('#producto_agregar_lubricante_tipo').val();
+
+			if(!lubricante_marca || !lubricante_vizcosidad || !lubricante_tipo) {
+				bootstrapAlert('Debe ingresar toda la información del lubricante!', 'warning'); return;
+			}
+
+			$('#agregarProductoModal').modal('hide');
+			$('#agregarDetallesLubricanteModal').modal('hide');
+			$('#agregarProductoInventarioModal').modal('show');
+		});
+
+		$('#btn_producto_agregar_caucho_atras').on('click', function() {
+			$('#agregarDetallesCauchoModal').modal('hide');
+			$('#agregarProductoInventarioModal').modal('hide');
+			$('#agregarProductoModal').modal('show');
+		});
+		$('#btn_producto_agregar_lubricante_atras').on('click', function() {
+			$('#agregarDetallesLubricanteModal').modal('hide');
+			$('#agregarProductoInventarioModal').modal('hide');
+			$('#agregarProductoModal').modal('show');
+		});
+		$('#btn_producto_agregar_atras').on('click', function() {
+			$('#agregarProductoInventarioModal').modal('hide');
+			$('#agregarProductoModal').modal('show');
+		});
+
+		$('#btn_producto_agregar_registrar').on('click', function() {
+			const producto_cantidad = $('#producto_agregar_cantidad').val();
+			const producto_precio = $('#producto_agregar_precio').val();
+
+			if(!producto_cantidad || !producto_precio) {
+				bootstrapAlert('Debe ingresar toda la información del producto!', 'warning'); return;
+			}
+
+			const producto = $('#form_agregar_producto').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
+			const inventario = $('#form_agregar_inventario').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
+			const data = {
+				producto: {...producto, ...inventario},
+				caucho: $('#form_agregar_caucho_detalles').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {}),
+				lubricante: $('#form_agregar_lubricante_detalles').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {})
+			};
+
+			fetch('/api/productos/', {
+		    	method: 'POST',
+		    	body: JSON.stringify(data)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+				if(!result.error) {
+					$('#form_agregar_producto').get(0).reset();
+					$('#form_agregar_caucho_detalles').get(0).reset();
+					$('#form_agregar_lubricante_detalles').get(0).reset();
+					$('#form_agregar_inventario').get(0).reset();
+					$('#producto_agregar_nombre').attr('readonly', false);
+
+					fill_table('productos');
+	
+					$('#agregarProductoInventarioModal').modal('hide');
+					$('#agregarDetallesLubricanteModal').modal('hide');
+					$('#agregarDetallesCauchoModal').modal('hide');
+					$('#agregarProductoModal').modal('hide');
+	
+					bootstrapAlert('Producto registrado!', 'success');
+
+				} else {
+					bootstrapAlert('Error al registrar producto!', 'danger');
+				}
+		    })
+		    .catch(function(error) {
+		    	console.log('Error: ' + error);
+		    });
+		});
+
+		// Acciones
+
+		// Modal detalles producto
+		$('#tabla_productos tbody').off('click', '.btn_producto_modal_detalles');
+		$('#tabla_productos tbody').on('click', '.btn_producto_modal_detalles', function () {
+			var row = $(this).parents('tr')[0];
+			producto_id = row.cells[0].innerHTML;
+
+			if(producto_id) {
+				fetch('/api/productos/' + producto_id)
+				.then(response => response.json())
+				.then(producto => {
+					$('#container_detalles_caucho').hide();
+					$('#container_detalles_lubricante').hide();
+
+					$('#producto_detalles_nombre').val(producto.nombre);
+					$('#producto_detalles_descripcion').val(producto.descripcion);
+
+					if(producto.producto_type == '2') {
+						$('#producto_detalles_caucho_marca').val(producto.extra.marca);
+						$('#producto_detalles_caucho_medidas').val(producto.extra.medidas);
+						$('#producto_detalles_caucho_calidad').val(producto.extra.calidad);
+						$('#producto_detalles_caucho_fabricacion').val(producto.extra.fecha_fabricacion);
+
+						$('#container_detalles_caucho').show();
+
+					} else if(producto.producto_type == '3') {
+						$('#producto_detalles_lubricante_marca').val(producto.extra.marca);
+						$('#producto_detalles_lubricante_vizcosidad').val(producto.extra.vizcosidad);
+						$('#producto_detalles_lubricante_tipo').val(producto.extra.tipo);
+
+						$('#container_detalles_lubricante').show();
+					}
+				})
+				.catch(function(error) {
+					bootstrapAlert('Error al buscar producto', 'danger');
+				});
+
+				$('#detallesClienteModal').modal('show');
+			} else {
+				bootstrapAlert('No hay producto seleccionado!', 'danger');
+			}
+
+			$('#detallesProductoModal').modal('show');
+		});
+
+		// Modal modificar producto
+		$('#tabla_productos tbody').off('click', '.btn_producto_modal_modificar');
+		$('#tabla_productos tbody').on('click', '.btn_producto_modal_modificar', function () {
+			row = $(this).parents('tr')[0];
+			producto_id = row.cells[0].innerHTML;
+			document.querySelector('#producto_modificar_id').value = producto_id;
+
+			if(producto_id) {
+				fetch('/api/productos/' + producto_id)
+				.then(response => response.json())
+				.then(producto => {
+					document.querySelector('#producto_modificar_nombre').value = producto.nombre;
+					document.querySelector('#producto_modificar_precio').value = producto.precio;
+					document.querySelector('#producto_modificar_descripcion').value = producto.descripcion;
+				})
+				.catch(function(error) {
+					bootstrapAlert('Ha ocurrido un error al buscar el producto en el inventario', 'error');
+				});
+
+				$('#modificarProductoModal').modal('show');
+			}
+
+			$('#modificarProductoModal').modal('show');
+		});
+
+		
+
+		// Modificar producto
+		$('#form_producto_modificar').submit(function(e) {
+			producto_id = document.querySelector('#producto_modificar_id').value;
+			form_modificar_data = $('#form_producto_modificar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
+			console.log(form_modificar_data)
+			fetch('/api/productos/' + producto_id, {
+		    	method: 'PUT',
+		    	body: JSON.stringify(form_modificar_data)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+		    	if(!result.error) {
+		    		bootstrapAlert('Producto modificado con éxito', 'success');
+		    		$('#modificarProductoModal').modal('hide');
+		    		this.reset();
+
+		    		setTimeout(() => {
+		    			fill_table('productos');
+		    		}, 100);
+				} else if(result.error == 'No permission.') {
+					$('#modificarProductoModal').modal('hide');
+					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de productos', 'info');
+		    	} else if(result.error == 'DoesNotExist.') {
+		    		$('#modificarProductoModal').modal('hide');
+		    		bootstrapAlert('Producto no registrado', 'warning');
+		    	} else if(result.error == 'ValueError.') {
+		    		bootstrapAlert('Ingrese todos los campos correctamente', 'warning');
+		    	} else {
+		    		bootstrapAlert('Ha ocurrido un error al modificar la información del producto!', 'warning');
+		    	}
+		    })
+		    .catch(function(error) {
+		    	bootstrapAlert('Ha ocurrido un error al modificar la información del producto!', 'warning');
+		    	console.log('Error: ' + error);
+		    });
+
+			e.preventDefault();
+
+		});
+
+		// Modal añadir producto
+		$('#tabla_productos tbody').off('click', '.btn_producto_modal_añadir');
+		$('#tabla_productos tbody').on('click', '.btn_producto_modal_añadir', function () {
+			var row = $(this).parents('tr')[0];
+			producto_id = row.cells[0].innerHTML;
+
+			$('#producto_añadir_id').val(producto_id);
+
+			$('#añadirProductoModal').modal('show');
+		});
+
+		// Añadir producto
+		$('#btn_producto_añadir').on('click', function() {
+			const producto_id = $('#producto_añadir_id').val();
+			const producto_cantidad = $('#producto_añadir_cantidad').val();
+
+			if(!producto_id) {
+				bootstrapAlert('No hay producto seleccionado!', 'danger'); return;
+			}
+
+			if(!producto_cantidad) {
+				bootstrapAlert('Debe ingresar cantidad del producto!', 'warning'); return;
+			}
+
+			fetch('/api/productos/' + producto_id + '/add', {
+		    	method: 'PATCH',
+		    	body: JSON.stringify({ id: producto_id, cantidad: producto_cantidad })
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+				if(!result.error) {
+					$('#form_añadir_producto').get(0).reset();
+					fill_table('productos');
+	
+					$('#añadirProductoModal').modal('hide');
+	
+					bootstrapAlert('Producto añadido!', 'success');
+				} else {
+					bootstrapAlert('Error al añadir producto!', 'danger');
+				}
+		    })
+		    .catch(function(error) {
+		    	console.log('Error: ' + error);
+		    });
+		});
+
+		// Modal remover producto
+		$('#tabla_productos tbody').off('click', '.btn_producto_modal_remover');
+		$('#tabla_productos tbody').on('click', '.btn_producto_modal_remover', function () {
+			var row = $(this).parents('tr')[0];
+			producto_id = row.cells[0].innerHTML;
+
+			$('#producto_remover_id').val(producto_id);
+
+			$('#removerProductoModal').modal('show');
+		});
+
+		// Remover producto
+		$('#btn_producto_remover').on('click', function() {
+			const producto_id = $('#producto_remover_id').val();
+			const producto_cantidad = $('#producto_remover_cantidad').val();
+
+			if(!producto_id) {
+				bootstrapAlert('No hay producto seleccionado!', 'danger'); return;
+			}
+
+			if(!producto_cantidad) {
+				bootstrapAlert('Debe ingresar cantidad del producto!', 'warning'); return;
+			}
+
+			fetch('/api/productos/' + producto_id + '/remove', {
+		    	method: 'PATCH',
+		    	body: JSON.stringify({ id: producto_id, cantidad: producto_cantidad })
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+				if(!result.error) {
+					$('#form_remover_producto').get(0).reset();
+					fill_table('productos');
+	
+					$('#removerProductoModal').modal('hide');
+	
+					bootstrapAlert('Producto removido!', 'success');
+
+				} else if(result.error == 'InvalidAmount.') {
+		    		bootstrapAlert('La cantidad a remover debe ser menor a la cantidad de producto actual!', 'warning');
+		    	} else {
+					bootstrapAlert('Error al remover producto!', 'danger');
+				}
+		    })
+		    .catch(function(error) {
+		    	console.log('Error: ' + error);
+		    });
+		});
+
+		fill_table('productos');
+	}
+
+	if(window.location.pathname.split('/')[1] === 'registro-ventas') {
+		const clients_options = document.querySelector('#clients_options');
+
+		updateProductSelect();
+
+		//Busca y rellena el select para seleccionar un cliente para la venta
+		fetch('/api/clientes')
+		.then(response => response.json())
+		.then(data => {
+			data.forEach(cliente => {
+				var opt = document.createElement('option');
+				opt.value = cliente.id;
+				opt.innerHTML = cliente.names;
+				clients_options.appendChild(opt);
+			});
+
+		})
+		.catch(function(error) {console.log('Error buscar clientes: ' + error);});
+
+		setTimeout(() => {
+			$(clients_options).selectpicker();
+		}, 500);
+
+		
+		//Añade la información correspondiente al producto que está en el selectpicker oculto y lo añade a los que se generan en la tabla de venta
+		$('#venta_agregar_productos tbody').off('change', '.selectpicker');
+		$('#venta_agregar_productos tbody').on('change', '.selectpicker', function () {
+			const precio = $("option[value=" + $(this).val() + "]", this).attr('data-precio');
+			const cantidad = $("option[value=" + $(this).val() + "]", this).attr('data-cantidad');
+
+			this.parentElement.parentElement.parentElement.querySelector('.input_precio').value = precio;
+			this.parentElement.parentElement.parentElement.querySelector('.input_precio_original').value = precio;
+			this.parentElement.parentElement.parentElement.querySelector('.input_cantidad').value = 1;
+			this.parentElement.parentElement.parentElement.querySelector('.input_cantidad').max = cantidad;
+		});
+
+		//Actualiza el precio dependiendo de la cantidad del producto que se añada
+		$(document).on('change, mouseup, keyup, input', '#venta_agregar_productos tbody .input_cantidad', function () {
+			const cantidad = $(this).val();
+			const precio = $(this).closest('tr').find('.input_precio_original').val();
+
+			if(cantidad == $(this).attr('max')){
+				bootstrapAlert('Llegó al límite de unidades en el inventario', 'warning');
+			}
+			
+			$(this).closest('tr').find('.input_precio').val(precio * cantidad);
+		});
+
+		$('#btn_generar_venta').on('click', function() {
+
+			const clienteId = document.getElementById('clients_options').options[document.getElementById('clients_options').selectedIndex].value;
+			const productos = productos_get_table_data("venta_agregar_productos")
+
+			const data = {
+				cliente: clienteId,
+				productos: productos
+			}
+
+			fetch('/api/ventas/', {
+		    	method: 'POST',
+		    	body: JSON.stringify(data)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+				if (result.message) {
+					updateProductSelect();
+					producto_reset_table("venta_agregar_productos");
+					
+					bootstrapAlert(result.message, 'success');
+				} else if (result.error) {
+					bootstrapAlert(result.error, 'danger');
+				}
+		    })
+		    .catch(function(error) {
+		    	console.log('Error: ' + error);
+				bootstrapAlert('Error en la conexión o respuesta del servidor.', 'danger');
+		    });
+		});
+
+	};
+
+	if(window.location.pathname.split('/')[1] === 'ventas') {
+
+		// Modal generar venta
+		$('#tabla_ventas tbody').off('click', '.btn_venta_modal_factura');
+		$('#tabla_ventas tbody').on('click', '.btn_venta_modal_factura', function () {
+			row = $(this).parents('tr')[0];
+			venta_id = row.cells[0].innerHTML;
+			$('#generar_factura_id').val(venta_id)
+			$('#generarFacturaModal').modal('show');
+		});
+
+		// Generar venta
+		$('#btn_generar_factura').on('click', function() {
+			venta_id = $('#generar_factura_id').val();
+			descripcion = $('#factura_descripcion').val();
+
+			const data = {
+				venta_id: venta_id,
+				descripcion: descripcion
+			}
+
+			fetch('/api/facturas/', {
+		    	method: 'POST',
+		    	body: JSON.stringify(data)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+		    	if(!result.error) {
+		    		$('#generarFacturaModal').modal('hide');
+		    		bootstrapAlert(result.success, 'success');
+					$('#factura_descripcion').val("")
+
+		    		setTimeout(() => {
+						fill_table('ventas');
+					}, 100);
+		    	}else {
+		    		bootstrapAlert(result.error, 'warning');
+		    	}
+				
+		    	// else if(result.error == 'No permission.') {
+		    	// 	$('#eliminarClienteModal').modal('hide');
+		    	// 	bootstrapToast('Tu cuenta no tiene permisos para eliminar clientes', 'info');
+		    	// } 
+		    })
+		    .catch(function(error) {
+		    	bootstrapAlert('Ha ocurrido un error al eliminar cliente', 'danger');
+		    	console.log('Error: ' + error);
+		    });
+		});
+
+		//Ver factura
+		$('#tabla_ventas tbody').off('click', '.btn_reporte_factura');
+		$('#tabla_ventas tbody').on('click', '.btn_reporte_factura', function () {
+			row = $(this).parents('tr')[0];
+			venta_id = row.cells[0].innerHTML;
+
+			if (venta_id) {
+				fetch('/api/facturas/' + venta_id)
+				.then(response => response.json())
+				.then(data => {
+					if (data.error) {
+						bootstrapAlert('No se ha seleccionado ninguna factura');
+					} else if (data.mensaje) {
+						bootstrapAlert(data.mensaje);
+					} else {
+						window.open('http://' + location.host + '/pdf/factura/' + data.id, '_blank');
+					}
+				})
+				.catch(error => {
+					console.error('Error en la petición:', error);
+				});
+			}
+		});
+
+		// Modal detalles venta
+		$('#tabla_ventas tbody').off('click', '.btn_venta_modal_detalles');
+		$('#tabla_ventas tbody').on('click', '.btn_venta_modal_detalles', function () {
+			row = $(this).parents('tr')[0];
+			venta_id = row.cells[0].innerHTML;
+
+			if(venta_id) {
+				fetch('/api/ventas/' + venta_id)
+				.then(response => response.json())
+				.then(venta => {
+					const cliente = venta.cliente[0];
+					document.querySelector('#venta_detalles_nroVenta').value = venta.id;
+					document.querySelector('#venta_detalles_fecha').value = venta.fecha;
+					document.querySelector('#venta_detalles_total').value = venta.total;
+					document.querySelector('#cliente_detalles_cedula').value = cliente.cedula;
+					document.querySelector('#cliente_detalles_num_tlf').value = cliente.num_tlf;
+					document.querySelector('#cliente_detalles_nombres').value = cliente.names;
+
+					const contenedor = document.getElementById('productos_informacion');
+					contenedor.innerHTML = '';
+					const productos = venta.productos[0];
+					var contador = 0;
+					productos.forEach((producto) => {
+
+						const titulo = document.createElement('h3');
+						titulo.textContent = producto.nombre;
+						const div_titulo = document.createElement('div');
+						div_titulo.classList.add('col-md-12', 'mb-3');
+						div_titulo.appendChild(titulo);
+						contenedor.appendChild(div_titulo);
+
+						generar_div("Nombre", producto.nombre, contenedor)
+						generar_div("Precio", producto.precio, contenedor)
+						generar_div("Descripcion", producto.descripcion, contenedor)
+						if (producto.extra.marca !== undefined) generar_div("Marca", producto.extra.marca, contenedor);
+
+						generar_div("Cantidad Solicitada", venta.cantidad[0][venta.detalles[0][contador].id], contenedor);
+						contador++;
+						
+						if(producto.extra.producto_type == 2){
+							generar_div("Medidas", producto.extra.medidas, contenedor)
+							generar_div("Calidad", producto.extra.calidad, contenedor)
+						}else if(producto.extra.producto_type == 3){
+							generar_div("Vizcocidad", producto.extra.vizcosidad, contenedor)
+							generar_div("Tipo", producto.extra.tipo, contenedor)
+						}
+
+					});
+				})
+				.catch(function(error) {
+					bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'error');
+					console.log('Error buscar cliente: ' + error);
+				});
+
+				$('#detallesVentaModal').modal('show');
+			} else {
+				bootstrapAlert('No se ha seleccionado ningún cliente', 'info');
+			}
+		});
+
+        fill_table('ventas');
+	}
+
+	if(window.location.pathname.split('/')[1] === 'transacciones') {
+        fill_table('transacciones');
+	}
+	
+	if(window.location.pathname.split('/')[1] === 'facturas') {
+		$('#btn_factura_modal_detalles').on('click', function() {
+			$('#detallesFacturaModal').modal('show');
+		});
+	};
+
+	if(window.location.pathname.split('/')[1] === 'servicios') {
+
+        fill_table('servicios');
+        
+		// Agregar servicio
+		$('#btn_servicio_modal_agregar').on('click', function() {
+			$('#agregarServicioModal').modal('show');
+		});
+
+		$('#btn_servicio_agregar_registrar').on('click', function() {
+
+			const servicio = $('#form_servicio_agregar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
+			
+			fetch('/api/servicios/', {
+		    	method: 'POST',
+		    	body: JSON.stringify(servicio)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+				if(!result.error) {
+					$('#form_servicio_agregar').get(0).reset();
+					fill_table('servicios');
+	
+					$('#agregarServicioModal').modal('hide');
+	
+					bootstrapAlert(result.message, 'success');
+				}
+				else {
+					bootstrapAlert('Error al registrar el servicio!', 'danger');
+				}
+		    })
+		    .catch(function(error) {
+		    	console.log('Error: ' + error);
+				bootstrapAlert('Error en la conexión o respuesta del servidor.', 'danger');
+		    });
+		});
+
+		// Modal detalles servicio
+		$('#tabla_servicios tbody').off('click', '.btn_servicio_modal_detalles');
+		$('#tabla_servicios tbody').on('click', '.btn_servicio_modal_detalles', function () {
+			row = $(this).parents('tr')[0];
+			servicio_id = row.cells[0].innerHTML;
+
+			if(servicio_id) {
+				fetch('/api/servicios/' + servicio_id)
+				.then(response => response.json())
+				.then(servicio => {
+					document.querySelector('#servicio_detalles_codigo').value = servicio.codigo;
+					document.querySelector('#servicio_detalles_nombre').value = servicio.nombre;
+					document.querySelector('#servicio_detalles_precio').value = servicio.precio;
+
+				})
+				.catch(function(error) {
+					bootstrapAlert('Ha ocurrido un error al buscar el servicio', 'error');
+				});
+
+				$('#detallesServicioModal').modal('show');
+			} else {
+				bootstrapAlert('No se ha seleccionado ningún servicio', 'info');
+			}
+		});
+
+		
+		// Modal modificar servicio
+		$('#tabla_servicios tbody').off('click', '.btn_servicio_modal_modificar');
+		$('#tabla_servicios tbody').on('click', '.btn_servicio_modal_modificar', function () {
+
+			row = $(this).parents('tr')[0];
+			servicio_id = row.cells[0].innerHTML;
+			document.querySelector('#servicio_modificar_id').value = servicio_id;
+
+			if(servicio_id) {
+				fetch('/api/servicios/' + servicio_id)
+				.then(response => response.json())
+				.then(servicio => {
+					document.querySelector('#servicio_modificar_codigo').value = servicio.codigo;
+					document.querySelector('#servicio_modificar_nombre').value = servicio.nombre;
+					document.querySelector('#servicio_modificar_precio').value = servicio.precio;
+
+				})
+				.catch(function(error) {
+					bootstrapAlert('Ha ocurrido un error al buscar el servicio', 'error');
+				});
+
+				$('#modificarServicioModal').modal('show');
+			} else {
+				bootstrapAlert('No se ha seleccionado ningún servicio', 'info');
+			}
+
+			$('#modificarServicioModal').modal('show');
+		});
+
+		// Modificar servicio
+		$('#form_servicio_modificar').submit(function(e) {
+			servicio_id = document.querySelector('#servicio_modificar_id').value;
+			form_modificar_data = $('#form_servicio_modificar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
+			
+			fetch('/api/servicios/' + servicio_id, {
+		    	method: 'PUT',
+		    	body: JSON.stringify(form_modificar_data)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+		    	if(!result.error) {
+		    		bootstrapAlert('Servicio modificado con éxito', 'success');
+		    		$('#modificarServicioModal').modal('hide');
+		    		this.reset();
+
+		    		setTimeout(() => {
+		    			fill_table('servicios');
+		    		}, 100);
+		    	} else if(result.error == 'DoesNotExist.') {
+		    		$('#error').modal('hide');
+		    		bootstrapAlert('Servicio no está registrado', 'warning');
+		    	} else if(result.error == 'ValueError.') {
+		    		bootstrapAlert('Ingrese todos los campos correctamente', 'warning');
+		    	} else {
+		    		bootstrapAlert('Ha ocurrido un error al modificar la información del servicio!', 'warning');
+		    	}
+		    })
+		    .catch(function(error) {
+		    	bootstrapAlert('Ha ocurrido un error al modificar la información del servicio!', 'warning');
+		    });
+
+			e.preventDefault();
+
+		});
+
+		// Modal eliminar servicio
+		$('#tabla_servicios tbody').off('click', '.btn_servicio_modal_eliminar');
+		$('#tabla_servicios tbody').on('click', '.btn_servicio_modal_eliminar', function () {
+			row = $(this).parents('tr')[0];
+			servicio_id = row.cells[0].innerHTML;
+			document.querySelector('#servicio_eliminar_id').value = servicio_id;
+			$('#eliminarServicioModal').modal('show');
+		});
+
+		// Eliminar servicio
+		$('#btn_servicio_eliminar').on('click', function() {
+			servicio_id = document.querySelector('#servicio_eliminar_id').value;
+
+			fetch('/api/servicios/' + servicio_id, {
+		    	method: 'DELETE',
+		    	body: JSON.stringify(servicio_id)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+		    	if(!result.error) {
+		    		$('#eliminarServicioModal').modal('hide');
+		    		bootstrapAlert('Servicio eliminado correctamente', 'success');
+		    		setTimeout(() => {
+						fill_table('servicios');
+					}, 100);
+		    	} else if(result.error == 'DoesNotExist.') {
+		    		$('#eliminarServicioModal').modal('hide');
+		    		bootstrapAlert('Servicio no está registrado', 'warning');
+		    	}else if(result.error == 'No permission.') {
+					$('#modificarProductoModal').modal('hide');
+					bootstrapAlert('Tu cuenta no tiene permisos para eliminar servicios', 'info');
+				}else {
+		    		bootstrapAlert('Ha ocurrido un error al eliminar servicio', 'error');
+		    	}
+		    })
+		    .catch(function(error) {
+		    	bootstrapAlert('Ha ocurrido un error al eliminar servicio', 'error');
+		    });
+		});
+
+		
+
+	}
+
+	if(window.location.pathname.split('/')[1] === 'registro-servicios') {
+		const clients_options = document.querySelector('#clients_options');
+
+		updateServicesSelect();
+
+		//Busca y rellena el select para seleccionar un cliente para la venta
+		fetch('/api/clientes')
+		.then(response => response.json())
+		.then(data => {
+			data.forEach(cliente => {
+				var opt = document.createElement('option');
+				opt.value = cliente.id;
+				opt.innerHTML = cliente.names;
+				clients_options.appendChild(opt);
+			});
+
+		})
+		.catch(function(error) {console.log('Error buscar clientes: ' + error);});
+
+		setTimeout(() => {
+			$(clients_options).selectpicker();
+		}, 500);
+		
+		//Añade la información correspondiente al producto que está en el selectpicker oculto y lo añade a los que se generan en la tabla de venta
+		$('#registro_agregar_servicios tbody').off('change', '.selectpicker');
+		$('#registro_agregar_servicios tbody').on('change', '.selectpicker', function () {
+			const precio = $("option[value=" + $(this).val() + "]", this).attr('data-precio');
+
+			this.parentElement.parentElement.parentElement.querySelector('.input_precio').value = precio;
+			this.parentElement.parentElement.parentElement.querySelector('.input_precio_original').value = precio;
+		});
+
+		$(document).on('change, mouseup, keyup, input', '#registro_agregar_servicios tbody .input_cantidad', function () {
+			const precio = $(this).closest('tr').find('.input_precio_original').val();
+			$(this).closest('tr').find('.input_precio').val(precio);
+		});
+
+		$('#btn_generar_servicio_facturado').on('click', function() {
+			const clienteId = document.getElementById('clients_options').options[document.getElementById('clients_options').selectedIndex].value;
+			const servicios = servicios_get_table_data("registro_agregar_servicios")
+
+			const data = {
+				cliente: clienteId,
+				servicios: servicios
+			}
+
+			fetch('/api/servicio-facturado/', {
+		    	method: 'POST',
+		    	body: JSON.stringify(data)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+				if (result.message) {
+					updateProductSelect();
+					servicio_reset_table("registro_agregar_servicios");
+					
+					bootstrapAlert(result.message, 'success');
+				} else if (result.error) {
+					bootstrapAlert(result.error, 'danger');
+				}
+		    })
+		    .catch(function(error) {
+		    	console.log('Error: ' + error);
+				bootstrapAlert('Error en la conexión o respuesta del servidor.', 'danger');
+		    });
+		});
+
+	};
+
+	if(window.location.pathname.split('/')[1] === 'servicio-facturado') {
+
+        fill_table('servicio-facturado');
+
+		// Modal detalles venta
+		$('#tabla_servicios_facturados tbody').off('click', '.btn_servicioFacturado_modal_detalles');
+		$('#tabla_servicios_facturados tbody').on('click', '.btn_servicioFacturado_modal_detalles', function () {
+			row = $(this).parents('tr')[0];
+			servicio_id = row.cells[0].innerHTML;
+
+			if(servicio_id) {
+				fetch('/api/servicio-facturado/' + servicio_id)
+				.then(response => response.json())
+				.then(servicioFacturado => {
+					document.querySelector('#servicio_detalles_cedula').value = servicioFacturado.cliente.cedula;
+					document.querySelector('#servicio_detalles_nombres').value = servicioFacturado.cliente.names;
+					document.querySelector('#servicio_detalles_num_tlfn').value = servicioFacturado.cliente.num_tlf;
+					document.querySelector('#servicio_detalles_monto').value = servicioFacturado.precio;
+
+					const contenedor = document.getElementById('servicios_informacion');
+					contenedor.innerHTML = '';
+					const serviciosFacturado = servicioFacturado.servicios;
+					serviciosFacturado.forEach((servicioFacturado) => {
+
+						const titulo = document.createElement('h3');
+						titulo.textContent = servicioFacturado.nombre;
+						const div_titulo = document.createElement('div');
+						div_titulo.classList.add('col-md-12', 'mb-3');
+						div_titulo.appendChild(titulo);
+						contenedor.appendChild(div_titulo);
+
+						generar_div("Código", servicioFacturado.codigo, contenedor)
+						generar_div("Nombre", servicioFacturado.nombre, contenedor)
+						generar_div("Precio", servicioFacturado.precio, contenedor)
+
+					});
+				})
+				.catch(function(error) {
+					bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'error');
+					console.log('Error buscar cliente: ' + error);
+				});
+
+				$('#detallesServicioModal').modal('show');
+			} else {
+				bootstrapAlert('No se ha seleccionado ningún cliente', 'info');
+			}
+		});
+
+		// Modal generar Factura
+		$('#tabla_servicios_facturados tbody').off('click', '.btn_venta_modal_factura');
+		$('#tabla_servicios_facturados tbody').on('click', '.btn_venta_modal_factura', function () {
+			row = $(this).parents('tr')[0];
+			venta_id = row.cells[0].innerHTML;
+			$('#generar_factura_id').val(venta_id)
+			$('#generarFacturaModal').modal('show');
+		});
+
+		//Ver factura servicio
+		$('#tabla_servicios_facturados tbody').off('click', '.btn_reporte_factura_servicio');
+		$('#tabla_servicios_facturados tbody').on('click', '.btn_reporte_factura_servicio', function () {
+			row = $(this).parents('tr')[0];
+			factura_servicio_id = row.cells[0].innerHTML;
+
+			window.open('http://' + location.host + '/pdf/factura_servicio/' + factura_servicio_id, '_blank');
+		});
+
+		// Generar Factura
+		$('#btn_generar_factura').on('click', function() {
+			venta_id = $('#generar_factura_id').val();
+			descripcion = $('#factura_descripcion').val();
+
+			const data = {
+				venta_id: venta_id,
+				descripcion: descripcion
+			}
+
+			fetch('/api/facturas/', {
+		    	method: 'POST',
+		    	body: JSON.stringify(data)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+		    	if(!result.error) {
+		    		$('#generarFacturaModal').modal('hide');
+		    		bootstrapAlert(result.success, 'success');
+					$('#factura_descripcion').val("")
+
+		    		setTimeout(() => {
+						fill_table('ventas');
+					}, 100);
+		    	}else {
+		    		bootstrapAlert(result.error, 'warning');
+		    	}
+				
+		    	// else if(result.error == 'No permission.') {
+		    	// 	$('#eliminarClienteModal').modal('hide');
+		    	// 	bootstrapToast('Tu cuenta no tiene permisos para eliminar clientes', 'info');
+		    	// } 
+		    })
+		    .catch(function(error) {
+		    	bootstrapAlert('Ha ocurrido un error al eliminar cliente', 'danger');
+		    	console.log('Error: ' + error);
+		    });
+		});
+	}
+
+});
+
+function updateServicesSelect() {
+	const services_options = document.querySelector('#services_options');
+
+	$(services_options).selectpicker('destroy').empty().append('<option value="" selected>Seleccionar servicio</option>');
+	
+	fetch('/api/servicios')
+	.then(response => response.json())
+	.then(data => {
+		data.forEach(servicio => {
+			var opt = document.createElement('option');
+			opt.value = servicio.codigo;
+			opt.innerHTML = servicio.nombre;
+			opt.dataset.precio = servicio.precio;
+			services_options.appendChild(opt);
+			
+		});
+
+		servicio_reset_table('registro_agregar_servicios');
+	})
+	.catch(function(error) {console.log('Error buscar servicios: ' + error);});
+}
+
+function updateProductSelect() {
+	const product_options = document.querySelector('#product_options');
+
+	$(product_options).selectpicker('destroy').empty().append('<option value="" selected>Seleccionar producto</option>');
+	
+	fetch('/api/productos')
+	.then(response => response.json())
+	.then(data => {
+		data.forEach(producto => {
+			if(producto.cantidad > 0){
+				var opt = document.createElement('option');
+				opt.value = producto.id;
+				opt.innerHTML = producto.nombre;
+				opt.dataset.cantidad = producto.cantidad;
+				opt.dataset.precio = producto.precio;
+				product_options.appendChild(opt);
+			}
+			
+		});
+
+		producto_reset_table('venta_agregar_productos');
+	})
+	.catch(function(error) {console.log('Error buscar productos: ' + error);});
+}
+
+function generar_div(nombre_label, valor_input, contenedor){
+
+	const div_contenedor = document.createElement('div');
+	div_contenedor.classList.add('col-md-6', 'mb-3');
+
+	const label = document.createElement('label');
+	label.classList.add('form-label'); // Corregir el nombre aquí
+
+	const input = document.createElement('input');
+	input.setAttribute('type', 'text');
+	input.classList.add('form-control');
+	input.setAttribute('readonly', 'readonly');
+	label.textContent = nombre_label;
+	input.value = valor_input;
+
+	div_contenedor.appendChild(label);
+	div_contenedor.appendChild(input);
+
+	contenedor.appendChild(div_contenedor);
+}
+
+function bootstrapAlert(message, type) {
+	$('.bootstrap-growl').alert('close');
+
+	$.bootstrapGrowl(message, {
+		ele: 'body', // which element to append to
+		type: type, // (null, 'info', 'error', 'success')
+		offset: {from: 'bottom', amount: 30}, // 'top', or 'bottom'
+		align: 'center', // ('left', 'right', or 'center')
+		width: 800, // (integer, or 'auto')
+		delay: 3000,
+		allow_dismiss: true,
+		stackup_spacing: 10 // spacing between consecutively stacked growls.
+	});
+}
+
+function fill_table(tipo) {
+	if(tipo === 'clientes') {
+        table = $('#tabla_clientes').DataTable({
+			'dom': 'Bfrtip',
+			// 'buttons': [
+			// 	{
+			// 		'text': '<i class="fa-solid fa-print"></i> Reporte de clientes',
+			// 		'action':
+			// 			function(e, dt, node, config) {
+			// 				let url = 'http://' + location.host + '/pdf/clientes';
+			// 				window.open(url, '_blank');
+			// 			}
+			// 	}
+			// ],
+			'autoWidth': false,
+			'responsive': true,
+			'pageLength': 6,
+			'destroy': true,
+			'scrollY': '560px',
+			'scrollCollapse': true,
+			'language': {'url': '/media/datatables-languages/es-ES_custom.json'},
+			'ajax': {
+				'url': '/api/clientes',
+				'type': 'GET',
+				'dataSrc': '',
+				'error': function(jqXHR, ajaxOptions, thrownError) {
+					bootstrapToast('Ha ocurrido un error al cargar la lista de clientes', 'error');
+					console.log('Error buscar clientes: ' + thrownError);
+				 }
+			},
+			'columns': [
+				{'data': 'id'},
+				{'data': 'cedula'},
+				{'data': 'names'},
+				{'data': 'last_names'},
+				{'data': 'num_tlf'},
+				{'data': 'email'},
+				{'data': 'id'},
+			],
+            'columnDefs': [
+				{'class': 'd-none', 'orderable': false, 'targets': [0]},
+				{
+					'orderable': false,
+					'width': 110,
+					'render': function (data, type, row) {
+						return `
+						<button type='button' class='btn btn-primary btn-sm btn_cliente_modal_detalles' data-toggle='tooltip' title='Información de producto'><i class='fa fa-book'></i></button>
+						<button type='button' class='btn btn-success btn-sm btn_cliente_modal_modificar' data-toggle='tooltip' title='Modificar Cliente'><i class='fa fa-pen'></i></button>
+						<button type='button' class='btn btn-danger btn-sm btn_cliente_modal_eliminar' data-toggle='tooltip' title='Eliminar Cliente'><i class='fa fa-trash'></i></button>
+						`;
+					},
+					'targets': [-1]
+				},
+			],
+			'order': [[0, 'asc']]
+		});
+	}else if(tipo === 'usuarios') {
+        table = $('#tabla_usuarios').DataTable({
+			'dom': 'Bfrtip',
+			'autoWidth': false,
+			'responsive': true,
+			'pageLength': 12,
+			'destroy': true,
+			'scrollY': '560px',
+			'scrollCollapse': true,
+			'language': {'url': '/media/datatables-languages/es-ES_default.json'},
+			'ajax': {
+				'url': '/api/usuarios',
+				'type': 'GET',
+				'dataSrc': '',
+				'error': function(jqXHR, ajaxOptions, thrownError) {
+					bootstrapAlert('Ha ocurrido un error al cargar los usuarios', 'danger');
+					console.log('Error buscar usuarios: ' + thrownError);
+				 }
+			},
+			'columns': [
+				{'data': 'id'},
+				{'data': 'username'},
+				{'data': 'cedula'},
+				{'data': 'names'},
+				{'data': 'last_names'},
+				{'data': 'num_tlf'},
+				{'data': 'email'},
+				{'data': 'rol'},
+				{'data': 'id'},
+			],
+			'columnDefs': [
+				{'class': 'd-none', 'orderable': false, 'targets': [0]},
+				{
+					'orderable': false,
+					'width': 140,
+					'render': function (data, type, row) {
+						return `
+							<button type='button' class='btn btn-primary btn-sm btn_usuario_modal_detalles' data-toggle='tooltip' title='Información de Usuario'><i class='fa fa-book'></i></button>
+							<button type='button' class='btn btn-success btn-sm btn_usuario_modal_modificar' data-toggle='tooltip' title='Modificar Usuario'><i class='fa fa-pen'></i></button>
+							<button type='button' class='btn btn-danger btn-sm btn_usuario_modal_eliminar' data-toggle='tooltip' title='Eliminar Usuario'><i class='fa fa-trash'></i></button>
+
+						`;
+					},
+					'targets': [-1]
+				},
+			],
+		});
+	}else if(tipo === 'proveedores') {
+        table = $('#tabla_proveedores').DataTable({
+			'dom': 'Bfrtip',
+			'autoWidth': false,
+			'responsive': true,
+			'pageLength': 12,
+			'destroy': true,
+			'scrollY': '560px',
+			'scrollCollapse': true,
+			'language': {'url': '/media/datatables-languages/es-ES_default.json'},
+			'ajax': {
+				'url': '/api/proveedores',
+				'type': 'GET',
+				'dataSrc': '',
+				'error': function(jqXHR, ajaxOptions, thrownError) {
+					bootstrapAlert('Ha ocurrido un error al cargar los proveedores', 'danger');
+				 }
+			},
+			'columns': [
+				{'data': 'id'},
+				{'data': 'rif'},
+				{'data': 'names'},
+				{'data': 'last_names'},
+				{'data': 'num_tlf'},
+				{'data': 'email'},
+				{'data': 'id'},
+			],
+			'columnDefs': [
+				{'class': 'd-none', 'orderable': false, 'targets': [0]},
+				{
+					'orderable': false,
+					'width': 140,
+					'render': function (data, type, row) {
+						return `
+							<button type='button' class='btn btn-primary btn-sm btn_proveedor_modal_detalles' data-toggle='tooltip' title='Información de Proveedor'><i class='fa fa-book'></i></button>
+							<button type='button' class='btn btn-success btn-sm btn_proveedor_modal_modificar' data-toggle='tooltip' title='Modificar Proveedor'><i class='fa fa-pen'></i></button>
+							<button type='button' class='btn btn-danger btn-sm btn_proveedor_modal_eliminar' data-toggle='tooltip' title='Eliminar Proveedor'><i class='fa fa-trash'></i></button>
+
+						`;
+					},
+					'targets': [-1]
+				},
+			],
+		});
+    } else if(tipo === 'productos') {
+        table = $('#tabla_productos').DataTable({
+			'dom': 'Bfrtip',
+			'autoWidth': false,
+			'responsive': true,
+			'pageLength': 12,
+			'destroy': true,
+			'scrollY': '560px',
+			'scrollCollapse': true,
+			'language': {'url': '/media/datatables-languages/es-ES_default.json'},
+			'ajax': {
+				'url': '/api/productos',
+				'type': 'GET',
+				'dataSrc': '',
+				'error': function(jqXHR, ajaxOptions, thrownError) {
+					bootstrapAlert('Ha ocurrido un error al cargar inventario', 'danger');
+					console.log('Error buscar productos: ' + thrownError);
+				 }
+			},
+			'columns': [
+				{'data': 'id'},
+				{'data': 'nombre'},
+				{'data': 'proveedor'},
+				{'data': 'cantidad'},
+				{'data': 'precio'},
+				{'data': 'id'},
+			],
+			'columnDefs': [
+				{'class': 'd-none', 'orderable': false, 'targets': [0]},
+				{
+					'orderable': false,
+					'width': 140,
+					'render': function (data, type, row) {
+						return `
+							<button type='button' class='btn btn-primary btn-sm btn_producto_modal_detalles' data-toggle='tooltip' title='Información de producto'><i class='fa fa-book'></i></button>
+							<button type='button' class='btn btn-warning btn-sm btn_producto_modal_modificar' data-toggle='tooltip' title='Modificar Producto'><i class='fa fa-pen'></i></button>
+							<button type='button' class='btn btn-success btn-sm btn_producto_modal_añadir' data-toggle='tooltip' title='Añadir producto'><i class='fa fa-plus'></i></button>
+							<button type='button' class='btn btn-danger btn-sm btn_producto_modal_remover' data-toggle='tooltip' title='Remover producto'><i class='fa fa-minus'></i></button>
+						`;
+					},
+					'targets': [-1]
+				},
+			],
+		});
+    } else if(tipo === 'ventas') {
+        table = $('#tabla_ventas').DataTable({
+			'dom': 'Bfrtip',
+			'autoWidth': false,
+			'responsive': true,
+			'pageLength': 12,
+			'destroy': true,
+			'scrollY': '560px',
+			'scrollCollapse': true,
+			'language': {'url': '/media/datatables-languages/es-ES_default.json'},
+			'ajax': {
+				'url': '/api/ventas',
+				'type': 'GET',
+				'dataSrc': '',
+				'error': function(jqXHR, ajaxOptions, thrownError) {
+					bootstrapAlert('Ha ocurrido un error al cargar inventario', 'danger');
+					console.log('Error buscar productos: ' + thrownError);
+				 }
+			},
+			'columns': [
+				{'data': 'id'},
+				{'data': 'id'},
+				{'data': 'fecha'},
+				{'data': 'cliente.0.cedula'},
+				{'data': 'cliente.0.names'},
+				{'data': 'total'},
+				{'data': 'id'},
+			],
+			'columnDefs': [
+				{'class': 'd-none', 'orderable': false, 'targets': [0]},
+				{
+					'orderable': false,
+					'width': 110,
+					'render': function (data, type, row) {
+						return `
+							<button type='button' class='btn btn-primary btn-sm btn_venta_modal_detalles' data-toggle='tooltip' title='Información de la venta'><i class='fa fa-book'></i></button>
+							<!-- <button type='button' class='btn btn-success btn-sm btn_venta_modal_factura' data-toggle='tooltip' title='Generar Factura'><i class='fa fa-download'></i></button> -->
+							<button type='button' class='btn btn-info btn-sm btn_reporte_factura' data-toggle='tooltip' title='Ver Factura'><i class='fa fa-eye'></i></button>
+						`;
+					},
+					'targets': [-1]
+				},
+			],
+		});
+    } else if(tipo === 'transacciones') {
+        table = $('#tabla_transacciones').DataTable({
+			'dom': 'Bfrtip',
+			'autoWidth': false,
+			'responsive': true,
+			'pageLength': 12,
+			'destroy': true,
+			'scrollY': '560px',
+			'scrollCollapse': true,
+			'language': {'url': '/media/datatables-languages/es-ES_default.json'},
+			'ajax': {
+				'url': '/api/transacciones',
+				'type': 'GET',
+				'dataSrc': '',
+				'error': function(jqXHR, ajaxOptions, thrownError) {
+					bootstrapAlert('Ha ocurrido un error al cargar inventario', 'danger');
+					console.log('Error buscar productos: ' + thrownError);
+				 }
+			},
+			'columns': [
+				{'data': 'id'},
+				{'data': 'accion'},
+				{'data': 'producto.0.nombre'},
+				{'data': 'cliente'},
+				{'data': 'usuario'},
+				{'data': 'cantidad'},
+				{'data': 'monto'},
+			],
+			
+		});
+    }else if(tipo === 'servicios') {
+        table = $('#tabla_servicios').DataTable({
+			'dom': 'Bfrtip',
+			'autoWidth': false,
+			'responsive': true,
+			'pageLength': 12,
+			'destroy': true,
+			'scrollY': '560px',
+			'scrollCollapse': true,
+			'language': {'url': '/media/datatables-languages/es-ES_default.json'},
+			'ajax': {
+				'url': '/api/servicios',
+				'type': 'GET',
+				'dataSrc': '',
+				'error': function(jqXHR, ajaxOptions, thrownError) {
+					bootstrapAlert('Ha ocurrido un error al cargar los servicios', 'danger');
+				 }
+			},
+			'columns': [
+				{'data': 'id'},
+				{'data': 'codigo'},
+				{'data': 'nombre'},
+				{'data': 'precio'},
+				{'data': 'id'},
+			],
+			'columnDefs': [
+				{'class': 'd-none', 'orderable': false, 'targets': [0]},
+				{
+					'orderable': false,
+					'width': 140,
+					'render': function (data, type, row) {
+						return `
+							<button type='button' class='btn btn-primary btn-sm btn_servicio_modal_detalles' data-toggle='tooltip' title='Información de Servicio'><i class='fa fa-book'></i></button>
+							<button type='button' class='btn btn-success btn-sm btn_servicio_modal_modificar' data-toggle='tooltip' title='Modificar Servicio'><i class='fa fa-pen'></i></button>
+							<button type='button' class='btn btn-danger btn-sm btn_servicio_modal_eliminar' data-toggle='tooltip' title='Eliminar Servicio'><i class='fa fa-trash'></i></button>
+
+						`;
+					},
+					'targets': [-1]
+				},
+			],
+		});
+	}else if(tipo === 'servicio-facturado') {
+        table = $('#tabla_servicios_facturados').DataTable({
+			'dom': 'Bfrtip',
+			'autoWidth': false,
+			'responsive': true,
+			'pageLength': 12,
+			'destroy': true,
+			'scrollY': '560px',
+			'scrollCollapse': true,
+			'language': {'url': '/media/datatables-languages/es-ES_default.json'},
+			'ajax': {
+				'url': '/api/servicio-facturado/',
+				'type': 'GET',
+				'dataSrc': '',
+				'error': function(jqXHR, ajaxOptions, thrownError) {
+					bootstrapAlert('Ha ocurrido un error al cargar los servicios', 'danger');
+				 }
+			},
+			'columns': [
+				{'data': 'id'},
+				{'data': 'cliente.cedula'},
+				{'data': 'cliente.names'},
+				{'data': 'cliente.num_tlf'},
+				{'data': 'precio'},
+				{'data': 'id'},
+			],
+			'columnDefs': [
+				{'class': 'd-none', 'orderable': false, 'targets': [0]},
+				{
+					'orderable': false,
+					'width': 140,
+					'render': function (data, type, row) {
+						return `
+							<button type='button' class='btn btn-primary btn-sm btn_servicioFacturado_modal_detalles' data-toggle='tooltip' title='Información de Servicio'><i class='fa fa-book'></i></button>
+							<button type='button' class='btn btn-info btn-sm btn_reporte_factura_servicio' data-toggle='tooltip' title='Ver Factura'><i class='fa fa-eye'></i></button>
+						`;
+					},
+					'targets': [-1]
+				},
+			],
+		});
+	}
+}
+
+function productos_get_table_data(table_id) {
+    let all_data_table = [];
+
+    $('#' + table_id + ' tbody tr').each(function(index) {
+        const producto_id = this.children[1].querySelector('.selectpicker').value;
+        const cantidad = this.children[2].children[0].value;
+        const monto = this.children[3].children[0].value;
+
+        if (producto_id) {
+            let current = {
+                producto_id: producto_id,
+                cantidad: cantidad,
+                monto: monto
+            };
+            all_data_table.push(current);
+        }
+    });
+
+    return all_data_table;
+}
+
+function servicios_get_table_data(table_id) {
+    let all_data_table = [];
+
+    $('#' + table_id + ' tbody tr').each(function(index) {
+        const servicio_id = this.children[1].querySelector('.selectpicker').value;
+        const monto = this.children[2].children[0].value;
+
+
+        if (servicio_id) {
+            let current = {
+                codigo: servicio_id,
+                monto: monto,
+            };
+            all_data_table.push(current);
+        }
+    });
+
+    return all_data_table;
+}
+
+function productos_add_table_row(table_id) {
+	const count = $('#' + table_id + ' tbody tr').length;
+	const select_options = document.querySelector('#product_options').innerHTML;
+
+	$('#' + table_id).find('tbody').append(
+		`<tr>
+			<td scope="row">${count+1}</td>
+			<td>
+				<select class="form-control selectpicker" data-live-search="true">${select_options}</select>
+			</td>
+			<td><input type="number" class="form-control input_cantidad" step="1" min="1" value="1" oninput="validity.valid||(value='');"></td>
+			<td>
+				<input type="number" class="form-control input_precio" step=".01" value="0.00" readonly>
+				<input type="hidden" class="input_precio_original" readonly>
+			</td>
+			<td><button type="button" class="btn btn-danger btn-sm" onclick="delete_row(this)"><i class="fa fa-trash"></i></button></td>
+		</tr>`
+	);
+
+	$('.selectpicker').selectpicker();
+}
+
+function servicios_add_table_row(table_id) {
+	const count = $('#' + table_id + ' tbody tr').length;
+	const select_options = document.querySelector('#services_options').innerHTML;
+
+	$('#' + table_id).find('tbody').append(
+		`<tr>
+			<td scope="row">${count+1}</td>
+			<td>
+				<select class="form-control selectpicker" data-live-search="true">${select_options}</select>
+			</td>
+			<td>
+				<input type="number" class="form-control input_precio" step=".01" value="0.00" readonly>
+				<input type="hidden" class="input_precio_original" readonly>
+			</td>
+			<td><button type="button" class="btn btn-danger btn-sm" onclick="delete_row(this)"><i class="fa fa-trash"></i></button></td>
+		</tr>`
+	);
+
+
+
+	$('.selectpicker').selectpicker();
+}
+
+function productos_load_table_data(table_id, data) {
+	if(data) {
+		$('#' + table_id + ' tbody tr').remove();
+
+		$.each(data.split('//'), function( index, value ) {
+			if(value) {
+				value_split = value.split(';;');
+
+				$('#' + table_id).find('tbody').append(
+					`<tr>
+						<td scope="row">${index+1}</td>
+						<td><input type="text" class="form-control" value="${value_split[0]}"></td>
+						<td><input type="number" class="form-control" step=".01" value="${value_split[1]}"></td>
+						<td><button type="button" class="btn btn-danger btn-sm" onclick="delete_row(this)"><i class="bi bi-x-circle"></i></button></td>
+					</tr>`
+				);
+			}
+		});
+	} else {
+		producto_reset_table(table_id);
+	}
+}
+
+function producto_reset_table(table_id) {
+	$('#' + table_id + ' tbody tr').remove();
+	productos_add_table_row(table_id);
+}
+
+function servicio_reset_table(table_id) {
+	$('#' + table_id + ' tbody tr').remove();
+	servicios_add_table_row(table_id);
+
+}
+
+function delete_row(btn) {
+	btn.parentElement.parentElement.remove();
+}
+
+function reset_modal_agregar(form_id){
+	$(form_id).get(0).reset();
+}
+
+function validarCorreo(id) {
+	var correo = document.getElementById(id).value;
+	var patronCorreo = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  
+	if (!patronCorreo.test(correo)) {
+	  document.getElementById('mensaje_error_' + id).innerText = 'Correo electrónico no válido';
+	} else {
+	  document.getElementById('mensaje_error_' + id).innerText = '';
+	}
+}
+
+$('.btn-detalles').on('click', function () {
+	var venta_id = $(this).data('venta-id');
+
+	if(venta_id) {
+		fetch('/api/ventas/' + venta_id)
+		.then(response => response.json())
+		.then(venta => {
+			const cliente = venta.cliente[0];
+			document.querySelector('#venta_detalles_nroVenta').value = venta.id;
+			document.querySelector('#venta_detalles_fecha').value = venta.fecha;
+			document.querySelector('#venta_detalles_total').value = venta.total;
+			document.querySelector('#cliente_detalles_cedula').value = cliente.cedula;
+			document.querySelector('#cliente_detalles_num_tlf').value = cliente.num_tlf;
+			document.querySelector('#cliente_detalles_nombres').value = cliente.names;
+
+			const contenedor = document.getElementById('productos_informacion');
+			contenedor.innerHTML = '';
+			const productos = venta.productos[0];
+			var contador = 0;
+			productos.forEach((producto) => {
+				console.log(venta.cantidad[0][venta.detalles[0][contador].id]);
+
+				const titulo = document.createElement('h3');
+				titulo.textContent = producto.nombre;
+				const div_titulo = document.createElement('div');
+				div_titulo.classList.add('col-md-12', 'mb-3');
+				div_titulo.appendChild(titulo);
+				contenedor.appendChild(div_titulo);
+
+				generar_div("Nombre", producto.nombre, contenedor)
+				generar_div("Precio", producto.precio, contenedor)
+				generar_div("Descripcion", producto.descripcion, contenedor)
+				if (producto.extra.marca !== undefined) generar_div("Marca", producto.extra.marca, contenedor);
+				
+				generar_div("Cantidad Solicitada", venta.cantidad[0][venta.detalles[0][contador].id], contenedor);
+				contador++;
+
+				if(producto.extra.producto_type == 2){
+					generar_div("Medidas", producto.extra.medidas, contenedor)
+					generar_div("Calidad", producto.extra.calidad, contenedor)
+				}else if(producto.extra.producto_type == 3){
+					generar_div("Vizcocidad", producto.extra.vizcosidad, contenedor)
+					generar_div("Tipo", producto.extra.tipo, contenedor)
+				}
+
+			});
+		})
+		.catch(function(error) {
+			bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'error');
+			console.log('Error buscar cliente: ' + error);
+		});
+
+		$('#detallesVentaModal').modal('show');
+	} else {
+		bootstrapAlert('No se ha seleccionado ningún cliente', 'info');
+	}
+});
