@@ -13,5 +13,18 @@
     padding: 2px 5px;
     margin-left: 5px;
     outline: none;
-    
+}
+
+.selected {
+    outline: solid yellow !important;
+    border-radius: 5px;
+}
+
+tr {
+    padding: 5px;
+}
+
+button:disabled  {
+    opacity: 0.5; /* Reducir la opacidad del botón */
+    cursor: not-allowed; /* Cambiar el cursor del mouse */
 }

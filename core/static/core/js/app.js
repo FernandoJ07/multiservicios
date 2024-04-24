@@ -1588,14 +1588,54 @@ function bootstrapAlert(message, type) {
 function fill_table(tipo) {
 	if (tipo === 'clientes') {
 		$("#tabla_clientes thead").hide();
+
         table = $('#tabla_clientes').DataTable({
             'dom': 'Bfrtip',
 			'buttons': [
 				{
-					'text': 'Saludar',
-					'className': 'saludar'
-					
+					'name': 'btn_detalles_cliente',
+					'text': 'Detalles cliente',
+					'attr':  {
+						'id': 'btn_detalles_cliente', 
+						'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
+						'disabled': true
+					},
+					'action':
+						function(e) {
+							clientes_selected_id = document.querySelector('#clientes_selected_id').value;
+
+							if(!clientes_selected_id) {
+								alert('No hay cliente seleccionado');
+								return;
+							}
+
+							console.log(clientes_selected_id)
+
+							alert('Detalles de cliente ' + clientes_selected_id);
+						}
 				},
+				{
+					'name': 'btn_modificar_cliente',
+					'text': 'Modificar',
+					'attr':  {
+						'id': 'btn_modificar_cliente', 
+						'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
+						'disabled': true
+					},
+					'action':
+						function(e) {
+							clientes_selected_id = document.querySelector('#clientes_selected_id').value;
+
+							if(!clientes_selected_id) {
+								alert('No hay cliente seleccionado');
+								return;
+							}
+
+							console.log(clientes_selected_id)
+
+							alert('Modificar ' + clientes_selected_id);
+						}
+				}
 			],
 			'select': true,
             'bInfo': false,
@@ -1617,8 +1657,9 @@ function fill_table(tipo) {
                 {
                     render: function (data, type, row, meta) {
                         const html = `
-                        <input type="hidden" value="${row.id}">
-						<div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
+                        	<input type="hidden" name="cliente_id" value="${row.id}">
+
+							<div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
 								<p class="mb-2 text-xl font-bold text-gray-300 dark:text-gray-300">
 									${row.shortname}
 								</p>
@@ -1631,16 +1672,36 @@ function fill_table(tipo) {
 								<p class="text-lg text-gray-200 dark:text-gray-200">
 									${row.email}
 								</p>
-						</div>
-                        `
+							</div>
+                        `;
+
                         return html;
                     }
                 },
             ],
             
-        });	
+        });
 
-		table.on('click', 'tbody tr', (e) => {
+		$('#tabla_clientes tbody').off('click', 'tr').on('click', 'tr', function () {
+			const clientes_selected = document.querySelector('#clientes_selected_id');
+			const current_cliente = this.querySelector('input[name="cliente_id"]') ? this.querySelector('input[name="cliente_id"]').value : '';
+
+			if ($(this).hasClass('selected')) {
+				$(this).removeClass('selected');
+				clientes_selected.value = '';
+			} else {
+				table.$('tr.selected').removeClass('selected');
+				$(this).addClass('selected');
+				clientes_selected.value = current_cliente;
+			}
+
+			btn_disabled_value = (clientes_selected.value == '');
+	
+			table.button('btn_detalles_cliente:name').nodes().attr('disabled', btn_disabled_value);
+			table.button('btn_modificar_cliente:name').nodes().attr('disabled', btn_disabled_value);
+		});
+
+		/* table.on('click', 'tbody tr', (e) => {
 			let classList = e.currentTarget.classList;
 			
 			if (classList.contains('selected')) {
@@ -1653,11 +1714,7 @@ function fill_table(tipo) {
 				classList.add('selected');
 				e.currentTarget.querySelector('td div').style.border = '3px solid white';
 			}
-		});
-
-		$('.saluda').on('click', function (){
-			console.log(table.row('.selected'))
-		});
+		}); */
 
 		table.on('draw', function(data) {
 			$('#tabla_clientes tbody').addClass('flex flex-wrap');
