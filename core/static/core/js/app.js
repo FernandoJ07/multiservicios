@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
 	if(window.location.pathname.split('/')[1] === 'clientes') {
+
+		fill_table('clientes');
         
 		// Agregar cliente
 		$('#btn_cliente_modal_agregar').on('click', function() {
@@ -35,8 +37,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				bootstrapAlert('Error en la conexión o respuesta del servidor.', 'danger');
 		    });
 		});
-
-		
 
 		// Modificar cliente
 		$('#form_cliente_modificar').submit(function(e) {
@@ -186,9 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			$('#modificarClienteModal').modal('show');
 		});
 
-
-
-        fill_table('clientes');
+        
 	}
 
 	if(window.location.pathname.split('/')[1] === 'usuarios') {
@@ -1588,61 +1586,86 @@ function bootstrapAlert(message, type) {
 }
 
 function fill_table(tipo) {
-	if(tipo === 'clientes') {
+	if (tipo === 'clientes') {
+		$("#tabla_clientes thead").hide();
         table = $('#tabla_clientes').DataTable({
-			'dom': 'Bfrtip',
-			// 'buttons': [
-			// 	{
-			// 		'text': '<i class="fa-solid fa-print"></i> Reporte de clientes',
-			// 		'action':
-			// 			function(e, dt, node, config) {
-			// 				let url = 'http://' + location.host + '/pdf/clientes';
-			// 				window.open(url, '_blank');
-			// 			}
-			// 	}
-			// ],
-			'autoWidth': false,
-			'responsive': true,
-			'pageLength': 6,
-			'destroy': true,
-			'scrollY': '560px',
-			'scrollCollapse': true,
-			'language': {'url': '/media/datatables-languages/es-ES_custom.json'},
-			'ajax': {
-				'url': '/api/clientes',
-				'type': 'GET',
-				'dataSrc': '',
-				'error': function(jqXHR, ajaxOptions, thrownError) {
-					bootstrapToast('Ha ocurrido un error al cargar la lista de clientes', 'error');
-					console.log('Error buscar clientes: ' + thrownError);
-				 }
-			},
-			'columns': [
-				{'data': 'id'},
-				{'data': 'cedula'},
-				{'data': 'names'},
-				{'data': 'last_names'},
-				{'data': 'num_tlf'},
-				{'data': 'email'},
-				{'data': 'id'},
-			],
-            'columnDefs': [
-				{'class': 'd-none', 'orderable': false, 'targets': [0]},
+            'dom': 'Bfrtip',
+			'buttons': [
 				{
-					'orderable': false,
-					'width': 110,
-					'render': function (data, type, row) {
-						return `
-						<button type='button' class='btn btn-primary btn-sm btn_cliente_modal_detalles' data-toggle='tooltip' title='Información de producto'><i class='fa fa-book'></i></button>
-						<button type='button' class='btn btn-success btn-sm btn_cliente_modal_modificar' data-toggle='tooltip' title='Modificar Cliente'><i class='fa fa-pen'></i></button>
-						<button type='button' class='btn btn-danger btn-sm btn_cliente_modal_eliminar' data-toggle='tooltip' title='Eliminar Cliente'><i class='fa fa-trash'></i></button>
-						`;
-					},
-					'targets': [-1]
+					'text': 'Saludar',
+					'className': 'saludar'
+					
 				},
 			],
-			'order': [[0, 'asc']]
+			'select': true,
+            'bInfo': false,
+            'pageLength': 8,
+            'destroy': true,
+            'lengthChange': false,
+            'deferRender': true,
+            'language': { 'url': '/media/datatables-languages/es-ES_custom.json' },
+            'ajax': {
+                'url': '/api/clientes',
+                'type': 'GET',
+                'dataSrc': '',
+                'error': function (jqXHR, ajaxOptions, thrownError) {
+                    bootstrapToast('Ha ocurrido un error al cargar la lista de clientes', 'error');
+                    console.log('Error buscar clientes: ' + thrownError);
+                }
+            },
+            'columns': [
+                {
+                    render: function (data, type, row, meta) {
+                        const html = `
+                        <input type="hidden" value="${row.id}">
+						<div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
+								<p class="mb-2 text-xl font-bold text-gray-300 dark:text-gray-300">
+									${row.shortname}
+								</p>
+								<p class="text-lg text-gray-200 dark:text-gray-200">
+									${row.cedula}
+								</p>
+								<p class="text-lg text-gray-200 dark:text-gray-200">
+									${row.num_tlf}
+								</p>
+								<p class="text-lg text-gray-200 dark:text-gray-200">
+									${row.email}
+								</p>
+						</div>
+                        `
+                        return html;
+                    }
+                },
+            ],
+            
+        });	
+
+		table.on('click', 'tbody tr', (e) => {
+			let classList = e.currentTarget.classList;
+			
+			if (classList.contains('selected')) {
+				classList.remove('selected');
+				e.currentTarget.querySelector('td div').style.border = '';
+
+			}
+			else {
+				table.rows('.selected').nodes().each((row) => row.classList.remove('selected'));
+				classList.add('selected');
+				e.currentTarget.querySelector('td div').style.border = '3px solid white';
+			}
 		});
+
+		$('.saluda').on('click', function (){
+			console.log(table.row('.selected'))
+		});
+
+		table.on('draw', function(data) {
+			$('#tabla_clientes tbody').addClass('flex flex-wrap');
+			$('#tabla_clientes tbody tr').addClass('lg:w-1/4 md:w-1/3 sm:w-full');
+		});
+		
+
+
 	}else if(tipo === 'usuarios') {
         table = $('#tabla_usuarios').DataTable({
 			'dom': 'Bfrtip',
@@ -2077,60 +2100,60 @@ function validarCorreo(id) {
 	}
 }
 
-$('.btn-detalles').on('click', function () {
-	var venta_id = $(this).data('venta-id');
+// $('.btn-detalles').on('click', function () {
+// 	var venta_id = $(this).data('venta-id');
 
-	if(venta_id) {
-		fetch('/api/ventas/' + venta_id)
-		.then(response => response.json())
-		.then(venta => {
-			const cliente = venta.cliente[0];
-			document.querySelector('#venta_detalles_nroVenta').value = venta.id;
-			document.querySelector('#venta_detalles_fecha').value = venta.fecha;
-			document.querySelector('#venta_detalles_total').value = venta.total;
-			document.querySelector('#cliente_detalles_cedula').value = cliente.cedula;
-			document.querySelector('#cliente_detalles_num_tlf').value = cliente.num_tlf;
-			document.querySelector('#cliente_detalles_nombres').value = cliente.names;
+// 	if(venta_id) {
+// 		fetch('/api/ventas/' + venta_id)
+// 		.then(response => response.json())
+// 		.then(venta => {
+// 			const cliente = venta.cliente[0];
+// 			document.querySelector('#venta_detalles_nroVenta').value = venta.id;
+// 			document.querySelector('#venta_detalles_fecha').value = venta.fecha;
+// 			document.querySelector('#venta_detalles_total').value = venta.total;
+// 			document.querySelector('#cliente_detalles_cedula').value = cliente.cedula;
+// 			document.querySelector('#cliente_detalles_num_tlf').value = cliente.num_tlf;
+// 			document.querySelector('#cliente_detalles_nombres').value = cliente.names;
 
-			const contenedor = document.getElementById('productos_informacion');
-			contenedor.innerHTML = '';
-			const productos = venta.productos[0];
-			var contador = 0;
-			productos.forEach((producto) => {
-				console.log(venta.cantidad[0][venta.detalles[0][contador].id]);
+// 			const contenedor = document.getElementById('productos_informacion');
+// 			contenedor.innerHTML = '';
+// 			const productos = venta.productos[0];
+// 			var contador = 0;
+// 			productos.forEach((producto) => {
+// 				console.log(venta.cantidad[0][venta.detalles[0][contador].id]);
 
-				const titulo = document.createElement('h3');
-				titulo.textContent = producto.nombre;
-				const div_titulo = document.createElement('div');
-				div_titulo.classList.add('col-md-12', 'mb-3');
-				div_titulo.appendChild(titulo);
-				contenedor.appendChild(div_titulo);
+// 				const titulo = document.createElement('h3');
+// 				titulo.textContent = producto.nombre;
+// 				const div_titulo = document.createElement('div');
+// 				div_titulo.classList.add('col-md-12', 'mb-3');
+// 				div_titulo.appendChild(titulo);
+// 				contenedor.appendChild(div_titulo);
 
-				generar_div("Nombre", producto.nombre, contenedor)
-				generar_div("Precio", producto.precio, contenedor)
-				generar_div("Descripcion", producto.descripcion, contenedor)
-				if (producto.extra.marca !== undefined) generar_div("Marca", producto.extra.marca, contenedor);
+// 				generar_div("Nombre", producto.nombre, contenedor)
+// 				generar_div("Precio", producto.precio, contenedor)
+// 				generar_div("Descripcion", producto.descripcion, contenedor)
+// 				if (producto.extra.marca !== undefined) generar_div("Marca", producto.extra.marca, contenedor);
 				
-				generar_div("Cantidad Solicitada", venta.cantidad[0][venta.detalles[0][contador].id], contenedor);
-				contador++;
+// 				generar_div("Cantidad Solicitada", venta.cantidad[0][venta.detalles[0][contador].id], contenedor);
+// 				contador++;
 
-				if(producto.extra.producto_type == 2){
-					generar_div("Medidas", producto.extra.medidas, contenedor)
-					generar_div("Calidad", producto.extra.calidad, contenedor)
-				}else if(producto.extra.producto_type == 3){
-					generar_div("Vizcocidad", producto.extra.vizcosidad, contenedor)
-					generar_div("Tipo", producto.extra.tipo, contenedor)
-				}
+// 				if(producto.extra.producto_type == 2){
+// 					generar_div("Medidas", producto.extra.medidas, contenedor)
+// 					generar_div("Calidad", producto.extra.calidad, contenedor)
+// 				}else if(producto.extra.producto_type == 3){
+// 					generar_div("Vizcocidad", producto.extra.vizcosidad, contenedor)
+// 					generar_div("Tipo", producto.extra.tipo, contenedor)
+// 				}
 
-			});
-		})
-		.catch(function(error) {
-			bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'error');
-			console.log('Error buscar cliente: ' + error);
-		});
+// 			});
+// 		})
+// 		.catch(function(error) {
+// 			bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'error');
+// 			console.log('Error buscar cliente: ' + error);
+// 		});
 
-		$('#detallesVentaModal').modal('show');
-	} else {
-		bootstrapAlert('No se ha seleccionado ningún cliente', 'info');
-	}
-});
+// 		$('#detallesVentaModal').modal('show');
+// 	} else {
+// 		bootstrapAlert('No se ha seleccionado ningún cliente', 'info');
+// 	}
+// });

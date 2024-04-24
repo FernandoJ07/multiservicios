@@ -1,0 +1,17 @@
+/* Ajuste de estilos para datatable */
+.dataTables_wrapper .dataTables_filter {
+    color: #e5e6ea;
+    display: flex;
+    justify-content: end;
+    
+}
+
+.dataTables_wrapper .dataTables_filter input[type="search"] {
+    background: #1a1d22;
+    color: #e5e6ea;
+    border-bottom: 1px white solid;
+    padding: 2px 5px;
+    margin-left: 5px;
+    outline: none;
+    
+}
