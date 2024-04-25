@@ -3,39 +3,51 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		fill_table('clientes');
         
-		// Agregar cliente
+		// Modal Agregar cliente
 		$('#btn_cliente_modal_agregar').on('click', function() {
-			$('#agregarClienteModal').modal('show');
+			modal('#agregarClienteModal', 'show');
+
 		});
 
-		$('#btn_cliente_agregar_registrar').on('click', function() {
-
-			const cliente = $('#form_cliente_agregar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
+		// Agregar cliente
+		$('#form_cliente_agregar').submit(function(e) {
+			var form_agregar_data = $('#form_cliente_agregar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
 			
-			fetch('/api/clientes/', {
+			fetch('/api/clientes/',{
 		    	method: 'POST',
-		    	body: JSON.stringify(cliente)
+		    	body: JSON.stringify(form_agregar_data)
 		   	})
 		    .then(response => response.json())
 		    .then(result => {
-				if(!result.error) {
-					$('#form_cliente_agregar').get(0).reset();
-					fill_table('clientes');
-	
-					$('#agregarClienteModal').modal('hide');
-	
-					bootstrapAlert('Cliente registrado!', 'success');
-				}else if(result.error = "IntegrityError") {
-						bootstrapAlert('Cédula duplicada. La cédula ingresada ya existe.', 'warning');
-				}
-				else {
-					bootstrapAlert('Error al registrar el cliente!', 'danger');
-				}
+				console.log(result)
+		    	if(!result.error) {
+		    		//toastr.success('Cliente modificado con éxito');
+					modal('#agregarClienteModal', 'hide');
+		    		this.reset();
+
+		    		setTimeout(() => {
+		    			fill_table('clientes');
+		    		}, 100);
+				} else if(result.error == 'No permission.') {
+					modal('#agregarClienteModal', 'hide');
+					//toastr.info('Tu cuenta no tiene permisos para modificar información de clientes');
+		    	} else if(result.error == 'DoesNotExist.') {
+					modal('#agregarClienteModal', 'hide');
+		    		//toastr.warning('Cliente no está registrado');
+		    	} else if(result.error == 'CedulaNotUnique.') {
+		    		//toastr.warning('Ya existe cliente registrado con esta cédula de identidad');
+		    	} else if(result.error == 'ValueError.') {
+		    		//toastr.warning('Ingrese todos los campos correctamente');
+		    	} else {
+		    		//toastr.warning('Ha ocurrido un error al modificar la información del cliente!');
+		    	}
 		    })
 		    .catch(function(error) {
+		    	//toastr.warning('Ha ocurrido un error al modificar la información del cliente!');
 		    	console.log('Error: ' + error);
-				bootstrapAlert('Error en la conexión o respuesta del servidor.', 'danger');
 		    });
+
+			e.preventDefault();
 		});
 
 		// Modificar cliente
@@ -80,111 +92,138 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 
 		// Modal eliminar cliente
-		$('#tabla_clientes tbody').off('click', '.btn_cliente_modal_eliminar');
-		$('#tabla_clientes tbody').on('click', '.btn_cliente_modal_eliminar', function () {
-			row = $(this).parents('tr')[0];
-			cliente_id = row.cells[0].innerHTML;
-			document.querySelector('#cliente_eliminar_id').value = cliente_id;
-			$('#eliminarClienteModal').modal('show');
-		});
-
-		// Eliminar cliente
 		$('#btn_cliente_eliminar').on('click', function() {
-			cliente_id = document.querySelector('#cliente_eliminar_id').value;
+			clientes_selected_id = document.querySelector('#clientes_selected_id').value;
 
-			fetch('/api/clientes/' + cliente_id, {
+			fetch('/api/clientes/' + clientes_selected_id, {
 		    	method: 'DELETE',
-		    	body: JSON.stringify(cliente_id)
+		    	body: JSON.stringify({})
 		   	})
 		    .then(response => response.json())
 		    .then(result => {
 		    	if(!result.error) {
-		    		$('#eliminarClienteModal').modal('hide');
-		    		bootstrapAlert('Cliente eliminado correctamente', 'success');
+					modal('#eliminarClienteModal', 'hide');
+		    		// toastr.success('Cliente eliminado correctamente');
 
 		    		setTimeout(() => {
 						fill_table('clientes');
 					}, 100);
 		    	} else if(result.error == 'DoesNotExist.') {
-		    		$('#eliminarClienteModal').modal('hide');
-		    		bootstrapAlert('Cliente no está registrado', 'warning');
-		    	}else if(result.error == 'No permission.') {
-		    		$('#eliminarClienteModal').modal('hide');
-		    		bootstrapAlert('Tu cuenta no tiene permisos para eliminar clientes', 'info');
-		    	}else {
-		    		bootstrapAlert('Ha ocurrido un error al eliminar cliente', 'error');
+					modal('#eliminarClienteModal', 'hide');
+
+		    		// toastr.warning('Cliente no está registrado');
 		    	}
-				
-		    	 
+		    	else if(result.error == 'No permission.') {
+					modal('#eliminarClienteModal', 'hide');
+
+		    		// toastr.info('Tu cuenta no tiene permisos para eliminar clientes');
+		    	} else {
+		    		// toastr.error('Ha ocurrido un error al eliminar cliente');
+		    	}
 		    })
 		    .catch(function(error) {
-		    	bootstrapAlert('Ha ocurrido un error al eliminar cliente', 'error');
+		    	// toastr.error('Ha ocurrido un error al eliminar cliente');
 		    	console.log('Error: ' + error);
 		    });
 		});
 
-		// Modal detalles cliente
-		$('#tabla_clientes tbody').off('click', '.btn_cliente_modal_detalles');
-		$('#tabla_clientes tbody').on('click', '.btn_cliente_modal_detalles', function () {
-			row = $(this).parents('tr')[0];
-			cliente_id = row.cells[0].innerHTML;
+		// // Eliminar cliente
+		// $('#btn_cliente_eliminar').on('click', function() {
+		// 	cliente_id = document.querySelector('#clientes_selected_id').value;
 
-			if(cliente_id) {
-				fetch('/api/clientes/' + cliente_id)
-				.then(response => response.json())
-				.then(cliente => {
-					console.log(cliente)
-					document.querySelector('#cliente_detalles_cedula').value = cliente.cedula;
-					document.querySelector('#cliente_detalles_num_tlf').value = cliente.num_tlf;
-					document.querySelector('#cliente_detalles_nombres').value = cliente.names;
-					document.querySelector('#cliente_detalles_apellidos').value = cliente.last_names;
-					document.querySelector('#cliente_detalles_email').value = cliente.email;
-					document.querySelector('#cliente_detalles_nacimiento').value = cliente.fecha_nacimiento;
-					document.querySelector('#cliente_detalles_edad').value = cliente.age;
-					document.querySelector('#cliente_detalles_direccion').value = cliente.direccion;
-				})
-				.catch(function(error) {
-					bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'error');
-					console.log('Error buscar cliente: ' + error);
-				});
+		// 	fetch('/api/clientes/' + cliente_id, {
+		//     	method: 'DELETE',
+		//     	body: JSON.stringify(cliente_id)
+		//    	})
+		//     .then(response => response.json())
+		//     .then(result => {
+		//     	if(!result.error) {
+		// 			modal('#eliminarClienteModal', 'hide');
+		//     		// bootstrapAlert('Cliente eliminado correctamente', 'success');
 
-				$('#detallesClienteModal').modal('show');
-			} else {
-				bootstrapAlert('No se ha seleccionado ningún cliente', 'info');
-			}
-		});
+		//     		setTimeout(() => {
+		// 				fill_table('clientes');
+		// 			}, 100);
+		//     	} else if(result.error == 'DoesNotExist.') {
+		//     		modal('#eliminarClienteModal', 'hide');
+		//     		// bootstrapAlert('Cliente no está registrado', 'warning');
+		//     	}else if(result.error == 'No permission.') {
+		//     		modal('#eliminarClienteModal', 'hide');
+		//     		// bootstrapAlert('Tu cuenta no tiene permisos para eliminar clientes', 'info');
+		//     	}else {
+		//     		// bootstrapAlert('Ha ocurrido un error al eliminar cliente', 'error');
+		//     	}
+				
+		    	 
+		//     })
+		//     .catch(function(error) {
+		//     	bootstrapAlert('Ha ocurrido un error al eliminar cliente', 'error');
+		//     	console.log('Error: ' + error);
+		//     });
+		// });
 
-		// Modal modificar cliente
-		$('#tabla_clientes tbody').off('click', '.btn_cliente_modal_modificar');
-		$('#tabla_clientes tbody').on('click', '.btn_cliente_modal_modificar', function () {
-			row = $(this).parents('tr')[0];
-			cliente_id = row.cells[0].innerHTML;
-			document.querySelector('#cliente_modificar_id').value = cliente_id;
+		// // Modal detalles cliente
+		// $('#tabla_clientes tbody').off('click', '.btn_cliente_modal_detalles');
+		// $('#tabla_clientes tbody').on('click', '.btn_cliente_modal_detalles', function () {
+		// 	row = $(this).parents('tr')[0];
+		// 	cliente_id = row.cells[0].innerHTML;
 
-			if(cliente_id) {
-				fetch('/api/clientes/' + cliente_id)
-				.then(response => response.json())
-				.then(cliente => {
-					document.querySelector('#cliente_modificar_cedula').value = cliente.cedula;
-					document.querySelector('#cliente_modificar_num_tlf').value = cliente.num_tlf;
-					document.querySelector('#cliente_modificar_nombres').value = cliente.names;
-					document.querySelector('#cliente_modificar_apellidos').value = cliente.last_names;
-					document.querySelector('#cliente_modificar_email').value = cliente.email;
-					document.querySelector('#cliente_modificar_nacimiento').value = cliente.fecha_nacimiento;
-					document.querySelector('#cliente_modificar_direccion').value = cliente.direccion;
+		// 	if(cliente_id) {
+		// 		fetch('/api/clientes/' + cliente_id)
+		// 		.then(response => response.json())
+		// 		.then(cliente => {
+		// 			console.log(cliente)
+		// 			document.querySelector('#cliente_detalles_cedula').value = cliente.cedula;
+		// 			document.querySelector('#cliente_detalles_num_tlf').value = cliente.num_tlf;
+		// 			document.querySelector('#cliente_detalles_nombres').value = cliente.names;
+		// 			document.querySelector('#cliente_detalles_apellidos').value = cliente.last_names;
+		// 			document.querySelector('#cliente_detalles_email').value = cliente.email;
+		// 			document.querySelector('#cliente_detalles_nacimiento').value = cliente.fecha_nacimiento;
+		// 			document.querySelector('#cliente_detalles_edad').value = cliente.age;
+		// 			document.querySelector('#cliente_detalles_direccion').value = cliente.direccion;
+		// 		})
+		// 		.catch(function(error) {
+		// 			bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'error');
+		// 			console.log('Error buscar cliente: ' + error);
+		// 		});
 
-				})
-				.catch(function(error) {
-					bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'error');
-				});
+		// 		$('#detallesClienteModal').modal('show');
+		// 	} else {
+		// 		bootstrapAlert('No se ha seleccionado ningún cliente', 'info');
+		// 	}
+		// });
 
-				$('#modificarClienteModal').modal('show');
-			} else {
-				bootstrapAlert('No se ha seleccionado ningún cliente', 'info');
-			}
+		// // Modal modificar cliente
+		// $('#tabla_clientes tbody').off('click', '.btn_cliente_modal_modificar');
+		// $('#tabla_clientes tbody').on('click', '.btn_cliente_modal_modificar', function () {
+		// 	row = $(this).parents('tr')[0];
+		// 	cliente_id = row.cells[0].innerHTML;
+		// 	document.querySelector('#cliente_modificar_id').value = cliente_id;
 
-			$('#modificarClienteModal').modal('show');
-		});
+		// 	if(cliente_id) {
+		// 		fetch('/api/clientes/' + cliente_id)
+		// 		.then(response => response.json())
+		// 		.then(cliente => {
+		// 			document.querySelector('#cliente_modificar_cedula').value = cliente.cedula;
+		// 			document.querySelector('#cliente_modificar_num_tlf').value = cliente.num_tlf;
+		// 			document.querySelector('#cliente_modificar_nombres').value = cliente.names;
+		// 			document.querySelector('#cliente_modificar_apellidos').value = cliente.last_names;
+		// 			document.querySelector('#cliente_modificar_email').value = cliente.email;
+		// 			document.querySelector('#cliente_modificar_nacimiento').value = cliente.fecha_nacimiento;
+		// 			document.querySelector('#cliente_modificar_direccion').value = cliente.direccion;
+
+		// 		})
+		// 		.catch(function(error) {
+		// 			bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'error');
+		// 		});
+
+		// 		$('#modificarClienteModal').modal('show');
+		// 	} else {
+		// 		bootstrapAlert('No se ha seleccionado ningún cliente', 'info');
+		// 	}
+
+		// 	$('#modificarClienteModal').modal('show');
+		// });
 
         
 	}
@@ -1615,6 +1654,7 @@ function fill_table(tipo) {
 								document.querySelector('#cliente_detalles_cedula').value = cliente.cedula;
 								document.querySelector('#cliente_detalles_nombres').value = cliente.fullname;
 								document.querySelector('#cliente_detalles_num_tlf').value = cliente.num_tlf;
+								document.querySelector('#cliente_detalles_email').value = cliente.email;
 								document.querySelector('#cliente_detalles_direccion').value = cliente.direccion;
 							})
 							.catch(function(error) {
@@ -1648,6 +1688,7 @@ function fill_table(tipo) {
 								document.querySelector('#cliente_modificar_cedula').value = cliente.cedula;
 								document.querySelector('#cliente_modificar_nombres').value = cliente.fullname;
 								document.querySelector('#cliente_modificar_num_tlf').value = cliente.num_tlf;
+								document.querySelector('#cliente_modificar_email').value = cliente.email;
 								document.querySelector('#cliente_modificar_direccion').value = cliente.direccion;
 							})
 							.catch(function(error) {
@@ -1656,6 +1697,19 @@ function fill_table(tipo) {
 							});
 
 							modal('#modificarClienteModal', 'show');
+						}
+				},
+				{
+					'name': 'btn_toggle_cliente',
+					'text': 'Eliminar',
+					'attr':  {
+						'id': 'btn_toggle_cliente', 
+						'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
+						'disabled': true
+					},
+					'action':
+						function(e) {
+							modal('#eliminarClienteModal', 'show');
 						}
 				}
 			],
@@ -1671,7 +1725,7 @@ function fill_table(tipo) {
                 'type': 'GET',
                 'dataSrc': '',
                 'error': function (jqXHR, ajaxOptions, thrownError) {
-                    bootstrapToast('Ha ocurrido un error al cargar la lista de clientes', 'error');
+                    // bootstrapToast('Ha ocurrido un error al cargar la lista de clientes', 'error');
                     console.log('Error buscar clientes: ' + thrownError);
                 }
             },
@@ -1721,6 +1775,7 @@ function fill_table(tipo) {
 	
 			table.button('btn_detalles_cliente:name').nodes().attr('disabled', btn_disabled_value);
 			table.button('btn_modificar_cliente:name').nodes().attr('disabled', btn_disabled_value);
+			table.button('btn_toggle_cliente:name').nodes().attr('disabled', btn_disabled_value);
 		});
 
 		table.on('draw', function(data) {
