@@ -8,15 +8,17 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from core.models import *
+from core.utils import analyze_name
 
 def serialize_data(data):
-    data['first_name'] = data["nombres"].split(" ")[0]
-    data['middle_name'] = data["nombres"].split(" ")[1] if (len(data["nombres"].split(" ")) > 1) else ""
-    data.pop("nombres", None)
+    names = analyze_name(data["fullname"])
 
-    data['last_name'] = data["apellidos"].split(" ")[0]
-    data['last_name_2'] = data["apellidos"].split(" ")[1] if (len(data["apellidos"].split(" ")) > 1) else ""
-    data.pop("apellidos", None)
+    data['first_name'] = names["first_name"]
+    data['middle_name'] = names["middle_name"]
+    data['last_name'] = names["last_name"]
+    data['last_name_2'] = names["last_name_2"]
+
+    data.pop("fullname", None)
 
     return data
 
