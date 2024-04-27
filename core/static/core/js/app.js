@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		    .then(result => {
 				console.log(result)
 		    	if(!result.error) {
-		    		//toastr.success('Cliente modificado con éxito');
+		    		bootstrapAlert('Cliente registrado con éxito', 'success');
 					modal('#agregarClienteModal', 'hide');
 		    		this.reset();
 
@@ -30,20 +30,24 @@ document.addEventListener('DOMContentLoaded', function() {
 		    		}, 100);
 				} else if(result.error == 'No permission.') {
 					modal('#agregarClienteModal', 'hide');
-					//toastr.info('Tu cuenta no tiene permisos para modificar información de clientes');
+					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de clientes', 'error');
+
 		    	} else if(result.error == 'DoesNotExist.') {
 					modal('#agregarClienteModal', 'hide');
-		    		//toastr.warning('Cliente no está registrado');
+		    		bootstrapAlert('Cliente no está registrado', 'error');
+
 		    	} else if(result.error == 'CedulaNotUnique.') {
-		    		//toastr.warning('Ya existe cliente registrado con esta cédula de identidad');
+		    		bootstrapAlert('Ya existe cliente registrado con esta cédula de identidad', 'error');
+					
 		    	} else if(result.error == 'ValueError.') {
-		    		//toastr.warning('Ingrese todos los campos correctamente');
+		    		bootstrapAlert('Ingrese todos los campos correctamente', 'error');
+
 		    	} else {
-		    		//toastr.warning('Ha ocurrido un error al modificar la información del cliente!');
+		    		bootstrapAlert('Ha ocurrido un error al modificar la información del cliente!');
 		    	}
 		    })
 		    .catch(function(error) {
-		    	//toastr.warning('Ha ocurrido un error al modificar la información del cliente!');
+		    	bootstrapAlert('Ha ocurrido un error al modificar la información del cliente!', 'error');
 		    	console.log('Error: ' + error);
 		    });
 
@@ -62,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		    .then(response => response.json())
 		    .then(result => {
 		    	if(!result.error) {
-		    		//toastr.success('Cliente modificado con éxito');
+		    		bootstrapAlert('Cliente modificado con éxito', 'success');
 		    		modal('#modificarClienteModal', 'hide');
 		    		this.reset();
 
@@ -71,20 +75,20 @@ document.addEventListener('DOMContentLoaded', function() {
 		    		}, 100);
 				} else if(result.error == 'No permission.') {
 					modal('#modificarClienteModal', 'hide');
-					//toastr.info('Tu cuenta no tiene permisos para modificar información de clientes');
+					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de clientes', 'error');
 		    	} else if(result.error == 'DoesNotExist.') {
 		    		modal('#modificarClienteModal', 'hide');
-		    		//toastr.warning('Cliente no está registrado');
+		    		bootstrapAlert('Cliente no está registrado', 'error');
 		    	} else if(result.error == 'CedulaNotUnique.') {
-		    		//toastr.warning('Ya existe cliente registrado con esta cédula de identidad');
+		    		bootstrapAlert('Ya existe cliente registrado con esta cédula de identidad', 'error');
 		    	} else if(result.error == 'ValueError.') {
-		    		//toastr.warning('Ingrese todos los campos correctamente');
+		    		bootstrapAlert('Ingrese todos los campos correctamente', 'error');
 		    	} else {
-		    		//toastr.warning('Ha ocurrido un error al modificar la información del cliente!');
+		    		bootstrapAlert('Ha ocurrido un error al modificar la información del cliente!');
 		    	}
 		    })
 		    .catch(function(error) {
-		    	//toastr.warning('Ha ocurrido un error al modificar la información del cliente!');
+		    	bootstrapAlert('Ha ocurrido un error al modificar la información del cliente!', 'error');
 		    	console.log('Error: ' + error);
 		    });
 
@@ -103,129 +107,27 @@ document.addEventListener('DOMContentLoaded', function() {
 		    .then(result => {
 		    	if(!result.error) {
 					modal('#eliminarClienteModal', 'hide');
-		    		// toastr.success('Cliente eliminado correctamente');
+		    		bootstrapAlert('Cliente eliminado correctamente', 'success');
 
 		    		setTimeout(() => {
 						fill_table('clientes');
 					}, 100);
 		    	} else if(result.error == 'DoesNotExist.') {
 					modal('#eliminarClienteModal', 'hide');
-
-		    		// toastr.warning('Cliente no está registrado');
+		    		bootstrapAlert('Cliente no está registrado', 'error');
 		    	}
 		    	else if(result.error == 'No permission.') {
 					modal('#eliminarClienteModal', 'hide');
-
-		    		// toastr.info('Tu cuenta no tiene permisos para eliminar clientes');
+		    		bootstrapAlert('Tu cuenta no tiene permisos para eliminar clientes', 'error');
 		    	} else {
-		    		// toastr.error('Ha ocurrido un error al eliminar cliente');
+		    		bootstrapAlert('Ha ocurrido un error al eliminar cliente');
 		    	}
 		    })
 		    .catch(function(error) {
-		    	// toastr.error('Ha ocurrido un error al eliminar cliente');
+		    	bootstrapAlert('Ha ocurrido un error al eliminar cliente', 'error');
 		    	console.log('Error: ' + error);
 		    });
 		});
-
-		// // Eliminar cliente
-		// $('#btn_cliente_eliminar').on('click', function() {
-		// 	cliente_id = document.querySelector('#clientes_selected_id').value;
-
-		// 	fetch('/api/clientes/' + cliente_id, {
-		//     	method: 'DELETE',
-		//     	body: JSON.stringify(cliente_id)
-		//    	})
-		//     .then(response => response.json())
-		//     .then(result => {
-		//     	if(!result.error) {
-		// 			modal('#eliminarClienteModal', 'hide');
-		//     		// bootstrapAlert('Cliente eliminado correctamente', 'success');
-
-		//     		setTimeout(() => {
-		// 				fill_table('clientes');
-		// 			}, 100);
-		//     	} else if(result.error == 'DoesNotExist.') {
-		//     		modal('#eliminarClienteModal', 'hide');
-		//     		// bootstrapAlert('Cliente no está registrado', 'warning');
-		//     	}else if(result.error == 'No permission.') {
-		//     		modal('#eliminarClienteModal', 'hide');
-		//     		// bootstrapAlert('Tu cuenta no tiene permisos para eliminar clientes', 'info');
-		//     	}else {
-		//     		// bootstrapAlert('Ha ocurrido un error al eliminar cliente', 'error');
-		//     	}
-				
-		    	 
-		//     })
-		//     .catch(function(error) {
-		//     	bootstrapAlert('Ha ocurrido un error al eliminar cliente', 'error');
-		//     	console.log('Error: ' + error);
-		//     });
-		// });
-
-		// // Modal detalles cliente
-		// $('#tabla_clientes tbody').off('click', '.btn_cliente_modal_detalles');
-		// $('#tabla_clientes tbody').on('click', '.btn_cliente_modal_detalles', function () {
-		// 	row = $(this).parents('tr')[0];
-		// 	cliente_id = row.cells[0].innerHTML;
-
-		// 	if(cliente_id) {
-		// 		fetch('/api/clientes/' + cliente_id)
-		// 		.then(response => response.json())
-		// 		.then(cliente => {
-		// 			console.log(cliente)
-		// 			document.querySelector('#cliente_detalles_cedula').value = cliente.cedula;
-		// 			document.querySelector('#cliente_detalles_num_tlf').value = cliente.num_tlf;
-		// 			document.querySelector('#cliente_detalles_nombres').value = cliente.names;
-		// 			document.querySelector('#cliente_detalles_apellidos').value = cliente.last_names;
-		// 			document.querySelector('#cliente_detalles_email').value = cliente.email;
-		// 			document.querySelector('#cliente_detalles_nacimiento').value = cliente.fecha_nacimiento;
-		// 			document.querySelector('#cliente_detalles_edad').value = cliente.age;
-		// 			document.querySelector('#cliente_detalles_direccion').value = cliente.direccion;
-		// 		})
-		// 		.catch(function(error) {
-		// 			bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'error');
-		// 			console.log('Error buscar cliente: ' + error);
-		// 		});
-
-		// 		$('#detallesClienteModal').modal('show');
-		// 	} else {
-		// 		bootstrapAlert('No se ha seleccionado ningún cliente', 'info');
-		// 	}
-		// });
-
-		// // Modal modificar cliente
-		// $('#tabla_clientes tbody').off('click', '.btn_cliente_modal_modificar');
-		// $('#tabla_clientes tbody').on('click', '.btn_cliente_modal_modificar', function () {
-		// 	row = $(this).parents('tr')[0];
-		// 	cliente_id = row.cells[0].innerHTML;
-		// 	document.querySelector('#cliente_modificar_id').value = cliente_id;
-
-		// 	if(cliente_id) {
-		// 		fetch('/api/clientes/' + cliente_id)
-		// 		.then(response => response.json())
-		// 		.then(cliente => {
-		// 			document.querySelector('#cliente_modificar_cedula').value = cliente.cedula;
-		// 			document.querySelector('#cliente_modificar_num_tlf').value = cliente.num_tlf;
-		// 			document.querySelector('#cliente_modificar_nombres').value = cliente.names;
-		// 			document.querySelector('#cliente_modificar_apellidos').value = cliente.last_names;
-		// 			document.querySelector('#cliente_modificar_email').value = cliente.email;
-		// 			document.querySelector('#cliente_modificar_nacimiento').value = cliente.fecha_nacimiento;
-		// 			document.querySelector('#cliente_modificar_direccion').value = cliente.direccion;
-
-		// 		})
-		// 		.catch(function(error) {
-		// 			bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'error');
-		// 		});
-
-		// 		$('#modificarClienteModal').modal('show');
-		// 	} else {
-		// 		bootstrapAlert('No se ha seleccionado ningún cliente', 'info');
-		// 	}
-
-		// 	$('#modificarClienteModal').modal('show');
-		// });
-
-        
 	}
 
 	if(window.location.pathname.split('/')[1] === 'usuarios') {
@@ -1725,7 +1627,7 @@ function fill_table(tipo) {
                 'type': 'GET',
                 'dataSrc': '',
                 'error': function (jqXHR, ajaxOptions, thrownError) {
-                    // bootstrapToast('Ha ocurrido un error al cargar la lista de clientes', 'error');
+                    bootstrapAlert('Ha ocurrido un error al cargar la lista de clientes', 'error');
                     console.log('Error buscar clientes: ' + thrownError);
                 }
             },
@@ -2216,6 +2118,38 @@ function validarCorreo(id) {
 	} else {
 	  document.getElementById('mensaje_error_' + id).innerText = '';
 	}
+}
+
+function bootstrapAlert(message, type) {
+
+	var alertClass = '';
+
+    switch (type) {
+        case 'info':
+            alertClass = 'info';
+            break;
+        case 'error':
+            alertClass = 'error';
+            break;
+        case 'success':
+            alertClass = 'success';
+            break;
+        default:
+            alertClass = 'info';
+            break;
+    }
+
+	$.bootstrapGrowl(message, {
+		
+		ele: 'body', // which element to append to
+		type: alertClass, // (null, 'info', 'error', 'success')
+		offset: {from: 'bottom', amount: 30}, // 'top', or 'bottom'
+		align: 'center', // ('left', 'right', or 'center')
+		width: 800, // (integer, or 'auto')
+		delay: 3000,
+		allow_dismiss: true,
+		stackup_spacing: 10 // spacing between consecutively stacked growls.
+	});
 }
 
 // $('.btn-detalles').on('click', function () {

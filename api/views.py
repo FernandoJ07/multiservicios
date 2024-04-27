@@ -128,9 +128,7 @@ def clientes(request, id=None):
                 cliente = Cliente.objects.create(**data)
                 return JsonResponse({"message": "Cliente agregado."}, status=201)
             except IntegrityError as e:
-                if "UNIQUE constraint failed: core_proveedor.rif" in str(e):
-                    return JsonResponse({"error": "IntegrityError"}, status=417)
-                return JsonResponse({"error": "IntegrityError."}, status=417)
+                return JsonResponse({"error": "CedulaNotUnique."}, status=417)
             except ValueError:
                 return JsonResponse({"error": "ValueError."}, status=417)
 
