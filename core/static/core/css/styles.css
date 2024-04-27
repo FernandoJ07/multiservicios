@@ -15,6 +15,30 @@
     outline: none;
 }
 
+#tabla_clientes_paginate{
+    margin-top: 15px !important;
+    display: flex;
+    justify-content: end;
+    align-items: center;
+
+}
+
+.dataTables_paginate .paginate_button {
+    padding: 0.4em 0.8em !important;
+    margin: 0em 0.1em;
+    color: #e5e6ea;
+    border-radius: 2px;
+}
+
+.paginate_button:hover{
+    background-color: #393c46ee
+}
+
+.dataTables_paginate span .current{
+    background-color: #7e3af2
+}
+
+
 .selected {
     outline: solid yellow !important;
     border-radius: 5px;
@@ -28,3 +52,4 @@ button:disabled  {
     opacity: 0.5; /* Reducir la opacidad del botón */
     cursor: not-allowed; /* Cambiar el cursor del mouse */
 }
+
