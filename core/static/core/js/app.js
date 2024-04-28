@@ -134,83 +134,61 @@ document.addEventListener('DOMContentLoaded', function() {
         
 		// Agregar usuario
 		$('#btn_usuario_modal_agregar').on('click', function() {
-			$('#agregarUsuarioModal').modal('show');
+			modal('#agregarUsuarioModal', 'show');
 		});
 
-		$('#btn_usuario_agregar_registrar').on('click', function() {
-
-			const usuario = $('#form_usuario_agregar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
+		// Agregar usuario
+		$('#form_usuario_agregar').submit(function(e) {
+			var form_agregar_data = $('#form_usuario_agregar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
 			
-			fetch('/api/usuarios/', {
+			fetch('/api/usuarios/',{
 		    	method: 'POST',
-		    	body: JSON.stringify(usuario)
+		    	body: JSON.stringify(form_agregar_data)
 		   	})
 		    .then(response => response.json())
 		    .then(result => {
-				if(!result.error) {
-					$('#form_usuario_agregar').get(0).reset();
-					fill_table('usuarios');
-	
-					$('#agregarUsuarioModal').modal('hide');
-	
-					bootstrapAlert(result.message, 'success');
-				}else if(result.error == 'No permission.') {
-					$('#modificarUsuarioModal').modal('hide');
-					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de usuarios', 'info');
-				}else if(result.error = "IntegrityError") {
-						bootstrapAlert('Cédula duplicada. La cédula ingresada ya existe.', 'warning');
-				}else if(result.error = "PasswordsNotMatch") {Cédula
-					bootstrapAlert('Las contraseñas no coinciden.', 'warning');
-			}
-				else {
-					bootstrapAlert('Error al registrar el usuario!', 'danger');
-				}
+				console.log(result)
+		    	if(!result.error) {
+		    		bootstrapAlert('usuario registrado con éxito', 'success');
+					modal('#agregarUsuarioModal', 'hide');
+		    		this.reset();
+
+		    		setTimeout(() => {
+		    			fill_table('usuarios');
+		    		}, 100);
+				} else if(result.error == 'No permission.') {
+					modal('#agregarUsuarioModal', 'hide');
+					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de usuarios', 'error');
+
+		    	} else if(result.error == 'DoesNotExist.') {
+					modal('#agregarUsuarioModal', 'hide');
+		    		bootstrapAlert('usuario no está registrado', 'error');
+
+		    	} else if(result.error == 'CedulaNotUnique.') {
+		    		bootstrapAlert('Ya existe usuario registrado con este rif', 'error');
+					
+		    	} else if(result.error == 'ValueError.') {
+		    		bootstrapAlert('Ingrese todos los campos correctamente', 'error');
+
+		    	} else {
+		    		bootstrapAlert('Ha ocurrido un error al modificar la información del usuario!');
+		    	}
 		    })
 		    .catch(function(error) {
+		    	bootstrapAlert('Ha ocurrido un error al modificar la información del usuario!', 'error');
 		    	console.log('Error: ' + error);
-				bootstrapAlert('Error en la conexión o respuesta del servidor.', 'danger');
 		    });
+
+			e.preventDefault();
 		});
 
 		
-		// Modal modificar Usuario
-		$('#tabla_usuarios tbody').off('click', '.btn_usuario_modal_modificar');
-		$('#tabla_usuarios tbody').on('click', '.btn_usuario_modal_modificar', function () {
-
-			row = $(this).parents('tr')[0];
-			usuario_id = row.cells[0].innerHTML;
-			document.querySelector('#usuario_modificar_id').value = usuario_id;
-
-			if(usuario_id) {
-				fetch('/api/usuarios/' + usuario_id)
-				.then(response => response.json())
-				.then(usuario => {
-					document.querySelector('#usuario_modificar_cedula').value = usuario.cedula;
-					document.querySelector('#usuario_modificar_username').value = usuario.username;
-					document.querySelector('#usuario_modificar_nombres').value = usuario.names;
-					document.querySelector('#usuario_modificar_apellidos').value = usuario.last_names;
-					document.querySelector('#usuario_modificar_num_tlf').value = usuario.num_tlf;
-					document.querySelector('#usuario_modificar_email').value = usuario.email;
-					document.querySelector('#usuario_modificar_rol').value = usuario.rol;
-
-				})
-				.catch(function(error) {
-					bootstrapAlert('Ha ocurrido un error al buscar el usuario', 'error');
-				});
-
-				$('#modificarUsuarioModal').modal('show');
-			} else {
-				bootstrapAlert('No se ha seleccionado ningún usuario', 'info');
-			}
-
-			$('#modificarUsuarioModal').modal('show');
-		});
-
 		// Modificar usuario
 		$('#form_usuario_modificar').submit(function(e) {
-			usuario_id = document.querySelector('#usuario_modificar_id').value;
-			form_modificar_data = $('#form_usuario_modificar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
-			fetch('/api/usuarios/' + usuario_id, {
+			usuarios_selected_id = document.querySelector('#usuarios_selected_id').value;
+			var form_modificar_data = $('#form_usuario_modificar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
+
+			fetch('/api/usuarios/' + usuarios_selected_id, {
 		    	method: 'PUT',
 		    	body: JSON.stringify(form_modificar_data)
 		   	})
@@ -218,107 +196,67 @@ document.addEventListener('DOMContentLoaded', function() {
 		    .then(result => {
 		    	if(!result.error) {
 		    		bootstrapAlert('Usuario modificado con éxito', 'success');
-		    		$('#modificarUsuarioModal').modal('hide');
+		    		modal('#modificarUsuarioModal', 'hide');
 		    		this.reset();
 
 		    		setTimeout(() => {
 		    			fill_table('usuarios');
 		    		}, 100);
 				} else if(result.error == 'No permission.') {
-					$('#modificarUsuarioModal').modal('hide');
-					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de usuarios', 'info');
+					modal('#modificarUsuarioModal', 'hide');
+					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de Usuarios', 'error');
 		    	} else if(result.error == 'DoesNotExist.') {
-		    		$('#error').modal('hide');
-		    		bootstrapAlert('Usuario no está registrado', 'warning');
+		    		modal('#modificarUsuarioModal', 'hide');
+		    		bootstrapAlert('Usuario no está registrado', 'error');
 		    	} else if(result.error == 'CedulaNotUnique.') {
-		    		bootstrapAlert('Ya existe usuario registrado con esta cédula de identidad', 'warning');
+		    		bootstrapAlert('Ya existe Usuario registrado con esta cédula de identidad', 'error');
 		    	} else if(result.error == 'ValueError.') {
-		    		bootstrapAlert('Ingrese todos los campos correctamente', 'warning');
+		    		bootstrapAlert('Ingrese todos los campos correctamente', 'error');
 		    	} else {
-		    		bootstrapAlert('Ha ocurrido un error al modificar la información del usuario!', 'warning');
+		    		bootstrapAlert('Ha ocurrido un error al modificar la información del Usuario!');
 		    	}
 		    })
 		    .catch(function(error) {
-		    	bootstrapAlert('Ha ocurrido un error al modificar la información del usuario!', 'warning');
+		    	bootstrapAlert('Ha ocurrido un error al modificar la información del Usuario!', 'error');
 		    	console.log('Error: ' + error);
 		    });
 
 			e.preventDefault();
-
 		});
+
 
 		// Modal eliminar usuario
-		$('#tabla_usuarios tbody').off('click', '.btn_usuario_modal_eliminar');
-		$('#tabla_usuarios tbody').on('click', '.btn_usuario_modal_eliminar', function () {
-			row = $(this).parents('tr')[0];
-			usuario_id = row.cells[0].innerHTML;
-			document.querySelector('#usuario_eliminar_id').value = usuario_id;
-			$('#eliminarUsuarioModal').modal('show');
-		});
-
-		// Eliminar usuario
 		$('#btn_usuario_eliminar').on('click', function() {
-			usuario_id = document.querySelector('#usuario_eliminar_id').value;
+			usuarios_selected_id = document.querySelector('#usuarios_selected_id').value;
 
-			fetch('/api/usuarios/' + usuario_id, {
+			fetch('/api/usuarios/' + usuarios_selected_id, {
 		    	method: 'DELETE',
-		    	body: JSON.stringify(usuario_id)
+		    	body: JSON.stringify({})
 		   	})
 		    .then(response => response.json())
 		    .then(result => {
 		    	if(!result.error) {
-		    		$('#eliminarUsuarioModal').modal('hide');
+					modal('#eliminarUsuarioModal', 'hide');
 		    		bootstrapAlert('Usuario eliminado correctamente', 'success');
 
 		    		setTimeout(() => {
 						fill_table('usuarios');
 					}, 100);
 		    	} else if(result.error == 'DoesNotExist.') {
-		    		$('#eliminarUsuarioModal').modal('hide');
-		    		bootstrapAlert('Usuario no está registrado', 'warning');
-		    	} else if(result.error == 'No permission.') {
-		    		$('#eliminarUsuarioModal').modal('hide');
-		    		bootstrapAlert('Tu cuenta no tiene permisos para eliminar usuarios', 'info');
-		    	} 
-				else {
-		    		bootstrapAlert('Ha ocurrido un error al eliminar usuario', 'error');
+					modal('#eliminarUsuarioModal', 'hide');
+		    		bootstrapAlert('Usuario no está registrado', 'error');
 		    	}
-		    	
+		    	else if(result.error == 'No permission.') {
+					modal('#eliminarUsuarioModal', 'hide');
+		    		bootstrapAlert('Tu cuenta no tiene permisos para eliminar Usuarios', 'error');
+		    	} else {
+		    		bootstrapAlert('Ha ocurrido un error al eliminar Usuario');
+		    	}
 		    })
 		    .catch(function(error) {
-		    	bootstrapAlert('Ha ocurrido un error al eliminar usuario', 'error');
+		    	bootstrapAlert('Ha ocurrido un error al eliminar Usuario', 'error');
 		    	console.log('Error: ' + error);
 		    });
-		});
-
-		// Modal detalles usuario
-		$('#tabla_usuarios tbody').off('click', '.btn_usuario_modal_detalles');
-		$('#tabla_usuarios tbody').on('click', '.btn_usuario_modal_detalles', function () {
-			row = $(this).parents('tr')[0];
-			usuario_id = row.cells[0].innerHTML;
-
-			if(usuario_id) {
-				fetch('/api/usuarios/' + usuario_id)
-				.then(response => response.json())
-				.then(usuario => {
-					document.querySelector('#usuario_detalles_cedula').value = usuario.cedula;
-					document.querySelector('#usuario_detalles_username').value = usuario.username;
-					document.querySelector('#usuario_detalles_nombres').value = usuario.names;
-					document.querySelector('#usuario_detalles_apellidos').value = usuario.last_names;
-					document.querySelector('#usuario_detalles_num_tlf').value = usuario.num_tlf;
-					document.querySelector('#usuario_detalles_email').value = usuario.email;
-					document.querySelector('#usuario_detalles_rol').value = usuario.rol;
-
-				})
-				.catch(function(error) {
-					bootstrapAlert('Ha ocurrido un error al buscar el usuario', 'error');
-					console.log('Error buscar usuario: ' + error);
-				});
-
-				$('#detallesUsuarioModal').modal('show');
-			} else {
-				bootstrapAlert('No se ha seleccionado ningún usuario', 'info');
-			}
 		});
 
         fill_table('usuarios');
@@ -1594,7 +1532,7 @@ function fill_table(tipo) {
 								document.querySelector('#cliente_modificar_direccion').value = cliente.direccion;
 							})
 							.catch(function(error) {
-								//toastr.error('Ha ocurrido un error al buscar el cliente');
+								bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'info');
 								console.log('Error buscar cliente: ' + error);
 							});
 
@@ -1687,52 +1625,183 @@ function fill_table(tipo) {
 
 
 	}else if(tipo === 'usuarios') {
+		$("#tabla_usuarios thead").hide();
         table = $('#tabla_usuarios').DataTable({
 			'dom': 'Bfrtip',
-			'autoWidth': false,
-			'responsive': true,
-			'pageLength': 12,
-			'destroy': true,
-			'scrollY': '560px',
-			'scrollCollapse': true,
+			'buttons': [
+                {
+                    'name': 'btn_detalles_usuario',
+                    'text': 'Detalles usuario',
+                    'attr':  {
+                        'id': 'btn_detalles_usuario', 
+                        'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
+                        'disabled': true
+                    },
+                    'action':
+                        function(e) {
+                            usuarios_selected_id = document.querySelector('#usuarios_selected_id').value;
+
+                            if(!usuarios_selected_id) {
+                                alert('No hay usuario seleccionado');
+                                return;
+                            }
+
+                            fetch('/api/usuarios/' + usuarios_selected_id)
+                            .then(response => response.json())
+                            .then(usuario => {
+                                document.querySelector('#usuario_detalles_username').value = usuario.username;
+                                document.querySelector('#usuario_detalles_nombres').value = usuario.fullname;
+								document.querySelector('#usuario_detalles_cedula').value = usuario.cedula;
+                                document.querySelector('#usuario_detalles_num_tlf').value = usuario.num_tlf;
+                                document.querySelector('#usuario_detalles_email').value = usuario.email;
+								document.querySelector('#usuario_detalles_rol').value = usuario.rol;
+
+                            })
+                            .catch(function(error) {
+                                bootstrapAlert('Ha ocurrido un error al buscar el usuario', 'error');
+                                console.log('Error buscar usuario: ' + error);
+                            });
+
+                            modal('#detallesUsuarioModal', 'show');
+                        }
+                },
+                {
+                    'name': 'btn_modificar_usuario',
+                    'text': 'Modificar',
+                    'attr':  {
+                        'id': 'btn_modificar_usuario', 
+                        'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
+                        'disabled': true
+                    },
+                    'action':
+                        function(e) {
+                            usuarios_selected_id = document.querySelector('#usuarios_selected_id').value;
+
+                            if(!usuarios_selected_id) {
+                                alert('No hay usuario seleccionado');
+                                return;
+                            }
+
+                            fetch('/api/usuarios/' + usuarios_selected_id)
+                            .then(response => response.json())
+                            .then(usuario => {
+                                document.querySelector('#usuario_modificar_cedula').value = usuario.cedula;
+                                document.querySelector('#usuario_modificar_username').value = usuario.username;
+                                document.querySelector('#usuario_modificar_nombres').value = usuario.fullname;
+                                document.querySelector('#usuario_modificar_num_tlf').value = usuario.num_tlf;
+                                document.querySelector('#usuario_modificar_email').value = usuario.email;
+								document.querySelector('#usuario_modificar_rol').value = usuario.rol;
+                            })
+                            .catch(function(error) {
+                                bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'error');
+                                console.log('Error buscar cliente: ' + error);
+                            });
+
+                            modal('#modificarUsuarioModal', 'show');
+                        }
+                },
+                {
+                    'name': 'btn_toggle_usuario',
+                    'text': 'Eliminar',
+                    'attr':  {
+                        'id': 'btn_toggle_usuario', 
+                        'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
+                        'disabled': true
+                    },
+                    'action':
+                        function(e) {
+                            modal('#eliminarUsuarioModal', 'show');
+                        }
+                }
+            ],
+			'select': true,
+            'bInfo': false,
+            'pageLength': 8,
+            'destroy': true,
+            'lengthChange': false,
+            'deferRender': true,
 			'language': {'url': '/media/datatables-languages/es-ES_default.json'},
 			'ajax': {
 				'url': '/api/usuarios',
 				'type': 'GET',
 				'dataSrc': '',
 				'error': function(jqXHR, ajaxOptions, thrownError) {
-					bootstrapAlert('Ha ocurrido un error al cargar los usuarios', 'danger');
+					bootstrapAlert('Ha ocurrido un error al cargar los usuarios', 'error');
 					console.log('Error buscar usuarios: ' + thrownError);
 				 }
 			},
 			'columns': [
-				{'data': 'id'},
-				{'data': 'username'},
-				{'data': 'cedula'},
-				{'data': 'names'},
-				{'data': 'last_names'},
-				{'data': 'num_tlf'},
-				{'data': 'email'},
-				{'data': 'rol'},
-				{'data': 'id'},
-			],
-			'columnDefs': [
-				{'class': 'd-none', 'orderable': false, 'targets': [0]},
-				{
-					'orderable': false,
-					'width': 140,
-					'render': function (data, type, row) {
-						return `
-							<button type='button' class='btn btn-primary btn-sm btn_usuario_modal_detalles' data-toggle='tooltip' title='Información de Usuario'><i class='fa fa-book'></i></button>
-							<button type='button' class='btn btn-success btn-sm btn_usuario_modal_modificar' data-toggle='tooltip' title='Modificar Usuario'><i class='fa fa-pen'></i></button>
-							<button type='button' class='btn btn-danger btn-sm btn_usuario_modal_eliminar' data-toggle='tooltip' title='Eliminar Usuario'><i class='fa fa-trash'></i></button>
+                {
+                    render: function (data, type, row, meta) {
+						let html = ``
+						
+						if(row.is_superuser){
+							html = `
+                            <input type="hidden" name="usuario_id" value="${row.id}">
 
-						`;
-					},
-					'targets': [-1]
-				},
-			],
+                            <div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
+                                <p class="mb-2 text-xl font-bold text-gray-300 dark:text-gray-300">
+                                    ${row.username}
+                                </p>
+                                <p class="text-lg text-gray-200 dark:text-gray-200">
+                                    ${row.rol}
+                                </p>
+                            </div>
+                        `;
+						}
+						else{
+							html = `
+                            <input type="hidden" name="usuario_id" value="${row.id}">
+
+                            <div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
+                                <p class="mb-2 text-xl font-bold text-gray-300 dark:text-gray-300">
+                                    ${row.shortname}
+                                </p>
+                                <p class="text-lg text-gray-200 dark:text-gray-200">
+                                    ${row.cedula}
+                                </p>
+                                <p class="text-lg text-gray-200 dark:text-gray-200">
+                                    ${row.num_tlf}
+                                </p>
+                                <p class="text-lg text-gray-200 dark:text-gray-200">
+                                    ${row.email}
+                                </p>
+                            </div>
+                        `;
+						}
+                        
+
+                        return html;
+                    }
+                },
+            ],
 		});
+
+		$('#tabla_usuarios tbody').off('click', 'tr').on('click', 'tr', function () {
+            const usuarios_selected = document.querySelector('#usuarios_selected_id');
+            const current_usuario = this.querySelector('input[name="usuario_id"]') ? this.querySelector('input[name="usuario_id"]').value : '';
+
+
+            if ($(this).hasClass('selected')) {
+                $(this).removeClass('selected');
+                usuarios_selected.value = '';
+            } else {
+                table.$('tr.selected').removeClass('selected');
+                $(this).addClass('selected');
+                usuarios_selected.value = current_usuario;
+            }
+
+            btn_disabled_value = (usuarios_selected.value == '');
+    
+            table.button('btn_detalles_usuario:name').nodes().attr('disabled', btn_disabled_value);
+            table.button('btn_modificar_usuario:name').nodes().attr('disabled', btn_disabled_value);
+            table.button('btn_toggle_usuario:name').nodes().attr('disabled', btn_disabled_value);
+        });
+
+        table.on('draw', function(data) {
+            $('#tabla_usuarios tbody').addClass('flex flex-wrap');
+            $('#tabla_usuarios tbody tr').addClass('lg:w-1/4 md:w-1/3 sm:w-full');
+        });
 	}else if(tipo === 'proveedores') {
         table = $('#tabla_proveedores').DataTable({
 			'dom': 'Bfrtip',

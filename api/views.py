@@ -179,7 +179,7 @@ def proveedores(request, id=None):
                 proveedor = Proveedor.objects.get(id=id)
                 return JsonResponse(proveedor.serialize(), safe=False)
             except IntegrityError:
-                return JsonResponse({"error": "IntegrityError."}, status=417)
+                return JsonResponse({"error": "RifNotUnique."}, status=417)
             except Proveedor.DoesNotExist:
                 return JsonResponse({"error": "DoesNotExist."}, status=417) 
 
@@ -194,7 +194,6 @@ def proveedores(request, id=None):
                 proveedor = Proveedor.objects.create(**data)
                 return JsonResponse({"message": "Proveedor agregado."}, status=201)
             except IntegrityError as e:
-                if "UNIQUE constraint failed: core_proveedor.rif" in str(e):
                     return JsonResponse({"error": "IntegrityError"}, status=417)
             except ValueError:
                 return JsonResponse({"error": "ValueError."}, status=417)

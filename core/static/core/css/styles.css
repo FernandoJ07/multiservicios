@@ -15,13 +15,14 @@
     outline: none;
 }
 
-#tabla_clientes_paginate{
+.dataTables_paginate{
     margin-top: 15px !important;
     display: flex;
     justify-content: end;
     align-items: center;
 
 }
+
 
 .dataTables_paginate .paginate_button {
     padding: 0.4em 0.8em !important;
