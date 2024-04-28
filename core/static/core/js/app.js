@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			e.preventDefault();
 		});
 
-		// Modal eliminar cliente
+		// Eliminar cliente
 		$('#btn_cliente_eliminar').on('click', function() {
 			clientes_selected_id = document.querySelector('#clientes_selected_id').value;
 
@@ -128,6 +128,137 @@ document.addEventListener('DOMContentLoaded', function() {
 		    	console.log('Error: ' + error);
 		    });
 		});
+	}
+
+	if(window.location.pathname.split('/')[1] === 'proveedores') {
+
+		// Agregar proveedor
+		$('#btn_proveedor_modal_agregar').on('click', function() {
+			modal('#agregarProveedorModal', 'show');
+		});
+        
+		// Agregar proveedor
+		$('#form_proveedor_agregar').submit(function(e) {
+			var form_agregar_data = $('#form_proveedor_agregar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
+			
+			fetch('/api/proveedores/',{
+		    	method: 'POST',
+		    	body: JSON.stringify(form_agregar_data)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+				console.log(result)
+		    	if(!result.error) {
+		    		bootstrapAlert('Proveedor registrado con éxito', 'success');
+					modal('#agregarProveedorModal', 'hide');
+		    		this.reset();
+
+		    		setTimeout(() => {
+		    			fill_table('proveedores');
+		    		}, 100);
+				} else if(result.error == 'No permission.') {
+					modal('#agregarProveedorModal', 'hide');
+					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de proveedoress', 'error');
+
+		    	} else if(result.error == 'DoesNotExist.') {
+					modal('#agregarProveedorModal', 'hide');
+		    		bootstrapAlert('Proveedor no está registrado', 'error');
+
+		    	} else if(result.error == 'CedulaNotUnique.') {
+		    		bootstrapAlert('Ya existe Proveedor registrado con esta cédula de identidad', 'error');
+					
+		    	} else if(result.error == 'ValueError.') {
+		    		bootstrapAlert('Ingrese todos los campos correctamente', 'error');
+
+		    	} else {
+		    		bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!');
+		    	}
+		    })
+		    .catch(function(error) {
+		    	bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!', 'error');
+		    	console.log('Error: ' + error);
+		    });
+
+			e.preventDefault();
+		});
+
+		// Modificar Proveedor
+		$('#form_proveedor_modificar').submit(function(e) {
+			proveedores_selected_id = document.querySelector('#proveedores_selected_id').value;
+			var form_modificar_data = $('#form_proveedor_modificar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
+
+			fetch('/api/proveedores/' + proveedores_selected_id, {
+		    	method: 'PUT',
+		    	body: JSON.stringify(form_modificar_data)
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+		    	if(!result.error) {
+		    		bootstrapAlert('Proveedor modificado con éxito', 'success');
+		    		modal('#modificarProveedorModal', 'hide');
+		    		this.reset();
+
+		    		setTimeout(() => {
+		    			fill_table('proveedores');
+		    		}, 100);
+				} else if(result.error == 'No permission.') {
+					modal('#modificarProveedorModal', 'hide');
+					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de Proveedors', 'error');
+		    	} else if(result.error == 'DoesNotExist.') {
+		    		modal('#modificarProveedorModal', 'hide');
+		    		bootstrapAlert('Proveedor no está registrado', 'error');
+		    	} else if(result.error == 'CedulaNotUnique.') {
+		    		bootstrapAlert('Ya existe Proveedor registrado con esta cédula de identidad', 'error');
+		    	} else if(result.error == 'ValueError.') {
+		    		bootstrapAlert('Ingrese todos los campos correctamente', 'error');
+		    	} else {
+		    		bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!');
+		    	}
+		    })
+		    .catch(function(error) {
+		    	bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!', 'error');
+		    	console.log('Error: ' + error);
+		    });
+
+			e.preventDefault();
+		});
+
+		// Eliminar Proveedor
+		$('#btn_proveedor_eliminar').on('click', function() {
+			proveedores_selected_id = document.querySelector('#proveedores_selected_id').value;
+
+			fetch('/api/proveedores/' + proveedores_selected_id, {
+		    	method: 'DELETE',
+		    	body: JSON.stringify({})
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+		    	if(!result.error) {
+					modal('#eliminarProveedorModal', 'hide');
+		    		bootstrapAlert('Proveedor eliminado correctamente', 'success');
+
+		    		setTimeout(() => {
+						fill_table('proveedores');
+					}, 100);
+		    	} else if(result.error == 'DoesNotExist.') {
+					modal('#eliminarProveedorModal', 'hide');
+		    		bootstrapAlert('Proveedor no está registrado', 'error');
+		    	}
+		    	else if(result.error == 'No permission.') {
+					modal('#eliminarProveedorModal', 'hide');
+		    		bootstrapAlert('Tu cuenta no tiene permisos para eliminar Proveedors', 'error');
+		    	} else {
+		    		bootstrapAlert('Ha ocurrido un error al eliminar Proveedor');
+		    	}
+		    })
+		    .catch(function(error) {
+		    	bootstrapAlert('Ha ocurrido un error al eliminar Proveedor', 'error');
+		    	console.log('Error: ' + error);
+		    });
+		});
+
+
+        fill_table('proveedores');
 	}
 
 	if(window.location.pathname.split('/')[1] === 'usuarios') {
@@ -260,192 +391,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 
         fill_table('usuarios');
-	}
-
-	if(window.location.pathname.split('/')[1] === 'proveedores') {
-        
-		// Agregar proveedor
-		$('#btn_proveedor_modal_agregar').on('click', function() {
-			$('#agregarProveedorModal').modal('show');
-		});
-
-		$('#btn_proveedor_agregar_registrar').on('click', function() {
-
-			const proveedor = $('#form_proveedor_agregar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
-			fetch('/api/proveedores/', {
-		    	method: 'POST',
-		    	body: JSON.stringify(proveedor)
-		   	})
-		    .then(response => response.json())
-		    .then(result => {
-				if(!result.error) {
-					$('#form_proveedor_agregar').get(0).reset();
-					fill_table('proveedores');
-	
-					$('#agregarProveedorModal').modal('hide');
-					bootstrapAlert('Proveedor registrado!', 'success');
-
-				}else if(result.error = "IntegrityError") {
-					bootstrapAlert('RIF duplicado. El RIF ingresado ya existe.', 'warning');
-				}
-				 else {
-					bootstrapAlert('Error al registrar el proveedor!', 'danger');
-				}
-		    })
-		    .catch(function(error) {
-		    	console.log('Error: ' + error);
-				bootstrapAlert('Error en la conexión o respuesta del servidor.', 'danger');
-		    });
-		});
-
-		// Modal modificar proveedor
-		$('#tabla_proveedores tbody').off('click', '.btn_proveedor_modal_modificar');
-		$('#tabla_proveedores tbody').on('click', '.btn_proveedor_modal_modificar', function () {
-			row = $(this).parents('tr')[0];
-			proveedor_id = row.cells[0].innerHTML;
-			document.querySelector('#proveedor_modificar_id').value = proveedor_id;
-
-			if(proveedor_id) {
-				fetch('/api/proveedores/' + proveedor_id)
-				.then(response => response.json())
-				.then(proveedor => {
-					document.querySelector('#proveedor_modificar_rif').value = proveedor.rif;
-					document.querySelector('#proveedor_modificar_num_tlf').value = proveedor.num_tlf;
-					document.querySelector('#proveedor_modificar_nombres').value = proveedor.names;
-					document.querySelector('#proveedor_modificar_apellidos').value = proveedor.last_names;
-					document.querySelector('#proveedor_modificar_email').value = proveedor.email;
-					document.querySelector('#proveedor_modificar_nacimiento').value = proveedor.fecha_nacimiento;
-					document.querySelector('#proveedor_modificar_direccion').value = proveedor.direccion;
-
-				})
-				.catch(function(error) {
-					bootstrapAlert('Ha ocurrido un error al buscar el proveedor', 'error');
-				});
-
-				$('#modificarProveedorModal').modal('show');
-			} else {
-				bootstrapAlert('No se ha seleccionado ningún proveedor', 'info');
-			}
-
-			$('#modificarProveedorModal').modal('show');
-		});
-
-		// Modificar proveedor
-		$('#form_proveedor_modificar').submit(function(e) {
-			proveedor_id = document.querySelector('#proveedor_modificar_id').value;
-			form_modificar_data = $('#form_proveedor_modificar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
-			fetch('/api/proveedores/' + proveedor_id, {
-		    	method: 'PUT',
-		    	body: JSON.stringify(form_modificar_data)
-		   	})
-		    .then(response => response.json())
-		    .then(result => {
-		    	if(!result.error) {
-		    		bootstrapAlert('Proveedor modificado con éxito', 'success');
-		    		$('#modificarProveedorModal').modal('hide');
-		    		this.reset();
-
-		    		setTimeout(() => {
-		    			fill_table('proveedores');
-		    		}, 100);
-				} else if(result.error == 'No permission.') {
-					$('#modificarProveedorModal').modal('hide');
-					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de los proveedores', 'info');
-		    	} else if(result.error == 'DoesNotExist.') {
-		    		$('#modificarProveedorModal').modal('hide');
-		    		bootstrapAlert('Proveedor no está registrado', 'warning');
-		    	} else if(result.error == 'RifNotUnique.') {
-		    		bootstrapAlert('Ya existe proveedor registrado con este Rif', 'warning');
-		    	} else if(result.error == 'ValueError.') {
-		    		bootstrapAlert('Ingrese todos los campos correctamente', 'warning');
-		    	} else {
-		    		bootstrapAlert('Ha ocurrido un error al modificar la información del proveedor!', 'warning');
-		    	}
-		    })
-		    .catch(function(error) {
-		    	bootstrapAlert('Ha ocurrido un error al modificar la información del proveedor!', 'warning');
-		    	console.log('Error: ' + error);
-		    });
-
-			e.preventDefault();
-
-		});
-
-		// Modal eliminar proveedor
-		$('#tabla_proveedores tbody').off('click', '.btn_proveedor_modal_eliminar');
-		$('#tabla_proveedores tbody').on('click', '.btn_proveedor_modal_eliminar', function () {
-			row = $(this).parents('tr')[0];
-			proveedor_id = row.cells[0].innerHTML;
-			document.querySelector('#proveedor_eliminar_id').value = proveedor_id;
-			$('#eliminarProveedorModal').modal('show');
-		});
-
-		// Eliminar proveedor
-		$('#btn_proveedor_eliminar').on('click', function() {
-			proveedor_id = document.querySelector('#proveedor_eliminar_id').value;
-
-			fetch('/api/proveedores/' + proveedor_id, {
-		    	method: 'DELETE',
-		    	body: JSON.stringify(proveedor_id)
-		   	})
-		    .then(response => response.json())
-		    .then(result => {
-		    	if(!result.error) {
-		    		$('#eliminarProveedorModal').modal('hide');
-		    		bootstrapAlert('Proveedor eliminado correctamente', 'success');
-
-		    		setTimeout(() => {
-						fill_table('proveedores');
-					}, 100);
-		    	} else if(result.error == 'DoesNotExist.') {
-		    		$('#eliminarProveedorModal').modal('hide');
-		    		bootstrapAlert('Proveedor no está registrado', 'warning');
-		    	}else if(result.error == 'No permission.') {
-		    		$('#eliminarClienteModal').modal('hide');
-		    		bootstrapAlert('Tu cuenta no tiene permisos para eliminar proveedores', 'info');
-		    	}else {
-		    		bootstrapAlert('Ha ocurrido un error al eliminar el proveedor', 'error');
-		    	}
-				
-		    	 
-		    })
-		    .catch(function(error) {
-		    	bootstrapAlert('Ha ocurrido un error al eliminar cliente', 'error');
-		    	console.log('Error: ' + error);
-		    });
-		});
-
-		// Modal detalles cliente
-		$('#tabla_proveedores tbody').off('click', '.btn_proveedor_modal_detalles');
-		$('#tabla_proveedores tbody').on('click', '.btn_proveedor_modal_detalles', function () {
-			row = $(this).parents('tr')[0];
-			proveedor_id = row.cells[0].innerHTML;
-
-			if(proveedor_id) {
-				fetch('/api/proveedores/' + proveedor_id)
-				.then(response => response.json())
-				.then(proveedor => {
-					document.querySelector('#proveedor_detalles_rif').value = proveedor.rif;
-					document.querySelector('#proveedor_detalles_num_tlf').value = proveedor.num_tlf;
-					document.querySelector('#proveedor_detalles_nombres').value = proveedor.names;
-					document.querySelector('#proveedor_detalles_apellidos').value = proveedor.last_names;
-					document.querySelector('#proveedor_detalles_email').value = proveedor.email;
-					document.querySelector('#proveedor_detalles_nacimiento').value = proveedor.fecha_nacimiento;
-					document.querySelector('#proveedor_detalles_edad').value = proveedor.age;
-					document.querySelector('#proveedor_detalles_direccion').value = proveedor.direccion;
-				})
-				.catch(function(error) {
-					bootstrapAlert('Ha ocurrido un error al buscar el proveedor', 'error');
-					console.log('Error buscar el proveedor: ' + error);
-				});
-
-				$('#detallesProveedorModal').modal('show');
-			} else {
-				bootstrapAlert('No se ha seleccionado ningún proveedor', 'info');
-			}
-		});
-
-        fill_table('proveedores');
 	}
 	
 	if(window.location.pathname.split('/')[1] === 'productos') {
@@ -1803,49 +1748,165 @@ function fill_table(tipo) {
             $('#tabla_usuarios tbody tr').addClass('lg:w-1/4 md:w-1/3 sm:w-full');
         });
 	}else if(tipo === 'proveedores') {
+        $("#tabla_proveedores thead").hide();
         table = $('#tabla_proveedores').DataTable({
 			'dom': 'Bfrtip',
-			'autoWidth': false,
-			'responsive': true,
-			'pageLength': 12,
-			'destroy': true,
-			'scrollY': '560px',
-			'scrollCollapse': true,
+			'buttons': [
+                {
+                    'name': 'btn_detalles_proveedor',
+                    'text': 'Detalles proveedor',
+                    'attr':  {
+                        'id': 'btn_detalles_proveedor', 
+                        'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
+                        'disabled': true
+                    },
+                    'action':
+                        function(e) {
+                            proveedores_selected_id = document.querySelector('#proveedores_selected_id').value;
+
+                            if(!proveedores_selected_id) {
+                                alert('No hay proveedores seleccionado');
+                                return;
+                            }
+
+                            fetch('/api/proveedores/' + proveedores_selected_id)
+                            .then(response => response.json())
+                            .then(proveedor => {
+                                document.querySelector('#proveedor_detalles_nombres').value = proveedor.fullname;
+								document.querySelector('#proveedor_detalles_rif').value = proveedor.rif;
+                                document.querySelector('#proveedor_detalles_num_tlf').value = proveedor.num_tlf;
+                                document.querySelector('#proveedor_detalles_email').value = proveedor.email;
+								document.querySelector('#proveedor_detalles_fecha_nacimiento').value = proveedor.fecha_nacimiento;
+								document.querySelector('#proveedor_detalles_edad').value = proveedor.get_age;
+								document.querySelector('#proveedor_detalles_direccion').value = proveedor.direccion;
+                            })
+                            .catch(function(error) {
+                                bootstrapAlert('Ha ocurrido un error al buscar el proveedor', 'error');
+                                console.log('Error buscar proveedor: ' + error);
+                            });
+
+                            modal('#detallesProveedorModal', 'show');
+                        }
+                },
+                {
+                    'name': 'btn_modificar_proveedor',
+                    'text': 'Modificar',
+                    'attr':  {
+                        'id': 'btn_modificar_proveedor', 
+                        'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
+                        'disabled': true
+                    },
+                    'action':
+                        function(e) {
+                            proveedores_selected_id = document.querySelector('#proveedores_selected_id').value;
+
+                            if(!proveedores_selected_id) {
+                                alert('No hay proveedores seleccionado');
+                                return;
+                            }
+
+                            fetch('/api/proveedores/' + proveedores_selected_id)
+                            .then(response => response.json())
+                            .then(proveedor => {
+                                document.querySelector('#proveedor_modificar_rif').value = proveedor.rif;
+                                document.querySelector('#proveedor_modificar_nombres').value = proveedor.fullname;
+                                document.querySelector('#proveedor_modificar_num_tlf').value = proveedor.num_tlf;
+                                document.querySelector('#proveedor_modificar_email').value = proveedor.email;
+								document.querySelector('#proveedor_modificar_fecha_nacimiento').value = proveedor.fecha_nacimiento;
+								document.querySelector('#proveedor_modificar_direccion').value = proveedor.direccion;
+                            })
+                            .catch(function(error) {
+                                bootstrapAlert('Ha ocurrido un error al buscar el proveedor', 'error');
+                                console.log('Error buscar proveedor: ' + error);
+                            });
+
+                            modal('#modificarProveedorModal', 'show');
+                        }
+                },
+                {
+                    'name': 'btn_toggle_proveedor',
+                    'text': 'Eliminar',
+                    'attr':  {
+                        'id': 'btn_toggle_proveedor', 
+                        'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
+                        'disabled': true
+                    },
+                    'action':
+                        function(e) {
+                            modal('#eliminarProveedorModal', 'show');
+                        }
+                }
+            ],
+			'select': true,
+            'bInfo': false,
+            'pageLength': 8,
+            'destroy': true,
+            'lengthChange': false,
+            'deferRender': true,
 			'language': {'url': '/media/datatables-languages/es-ES_default.json'},
 			'ajax': {
 				'url': '/api/proveedores',
 				'type': 'GET',
 				'dataSrc': '',
 				'error': function(jqXHR, ajaxOptions, thrownError) {
-					bootstrapAlert('Ha ocurrido un error al cargar los proveedores', 'danger');
+					bootstrapAlert('Ha ocurrido un error al cargar los proveedoress', 'error');
+					console.log('Error buscar proveedoress: ' + thrownError);
 				 }
 			},
 			'columns': [
-				{'data': 'id'},
-				{'data': 'rif'},
-				{'data': 'names'},
-				{'data': 'last_names'},
-				{'data': 'num_tlf'},
-				{'data': 'email'},
-				{'data': 'id'},
-			],
-			'columnDefs': [
-				{'class': 'd-none', 'orderable': false, 'targets': [0]},
-				{
-					'orderable': false,
-					'width': 140,
-					'render': function (data, type, row) {
-						return `
-							<button type='button' class='btn btn-primary btn-sm btn_proveedor_modal_detalles' data-toggle='tooltip' title='Información de Proveedor'><i class='fa fa-book'></i></button>
-							<button type='button' class='btn btn-success btn-sm btn_proveedor_modal_modificar' data-toggle='tooltip' title='Modificar Proveedor'><i class='fa fa-pen'></i></button>
-							<button type='button' class='btn btn-danger btn-sm btn_proveedor_modal_eliminar' data-toggle='tooltip' title='Eliminar Proveedor'><i class='fa fa-trash'></i></button>
+                {
+                    render: function (data, type, row, meta) {
+						
+						html = `
+							<input type="hidden" name="proveedor_id" value="${row.id}">
 
+							<div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
+								<p class="mb-2 text-xl font-bold text-gray-300 dark:text-gray-300">
+									${row.shortname}
+								</p>
+								<p class="text-lg text-gray-200 dark:text-gray-200">
+									${row.rif}
+								</p>
+								<p class="text-lg text-gray-200 dark:text-gray-200">
+									${row.num_tlf}
+								</p>
+								<p class="text-lg text-gray-200 dark:text-gray-200">
+									${row.email}
+								</p>
+							</div>
 						`;
-					},
-					'targets': [-1]
-				},
-			],
+						
+                        return html;
+                    }
+                },
+            ],
 		});
+
+		$('#tabla_proveedores tbody').off('click', 'tr').on('click', 'tr', function () {
+            const proveedores_selected = document.querySelector('#proveedores_selected_id');
+            const current_proveedor = this.querySelector('input[name="proveedor_id"]') ? this.querySelector('input[name="proveedor_id"]').value : '';
+
+
+            if ($(this).hasClass('selected')) {
+                $(this).removeClass('selected');
+                proveedores_selected.value = '';
+            } else {
+                table.$('tr.selected').removeClass('selected');
+                $(this).addClass('selected');
+                proveedores_selected.value = current_proveedor;
+            }
+
+            btn_disabled_value = (proveedores_selected.value == '');
+    
+            table.button('btn_detalles_proveedor:name').nodes().attr('disabled', btn_disabled_value);
+            table.button('btn_modificar_proveedor:name').nodes().attr('disabled', btn_disabled_value);
+            table.button('btn_toggle_proveedor:name').nodes().attr('disabled', btn_disabled_value);
+        });
+
+        table.on('draw', function(data) {
+            $('#tabla_proveedores tbody').addClass('flex flex-wrap');
+            $('#tabla_proveedores tbody tr').addClass('lg:w-1/4 md:w-1/3 sm:w-full');
+        });
     } else if(tipo === 'productos') {
         table = $('#tabla_productos').DataTable({
 			'dom': 'Bfrtip',

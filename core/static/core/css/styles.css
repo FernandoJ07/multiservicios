@@ -6,6 +6,10 @@
     
 }
 
+.dataTables_empty{
+    color: white;
+}
+
 .dataTables_wrapper .dataTables_filter input[type="search"] {
     background: #1a1d22;
     color: #e5e6ea;
