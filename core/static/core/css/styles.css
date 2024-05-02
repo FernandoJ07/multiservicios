@@ -88,3 +88,13 @@ button:disabled  {
     border-color: #d6e9c6;
 }
 
+
+/* Servicios Facturados */
+.servicios_titulo{
+    margin: 15px 0px;
+}
+
+.contenedor_labels{
+    padding: 10px 0px;
+    border-top: 2px solid #323541;
+}

@@ -1094,23 +1094,23 @@ function updateProductSelect() {
 
 function generar_div(nombre_label, valor_input, contenedor){
 
-	const div_contenedor = document.createElement('div');
-	div_contenedor.classList.add('col-md-6', 'mb-3');
 
 	const label = document.createElement('label');
-	label.classList.add('form-label'); // Corregir el nombre aquí
+	label.classList.add('block', 'text-sm', 'text-gray');
+
+	const span = document.createElement('span')
+	span.classList.add('text-gray-700', 'dark:text-gray-400')
+	span.textContent = nombre_label;
 
 	const input = document.createElement('input');
-	input.setAttribute('type', 'text');
-	input.classList.add('form-control');
+	input.classList.add('block', 'w-full', 'mt-1', 'text-sm', 'dark:border-gray-600', 'dark:bg-gray-700', 'focus:border-purple-400', 'focus:outline-none', 'focus:shadow-outline-purple', 'dark:text-gray-300', 'dark:focus:shadow-outline-gray', 'form-input');
 	input.setAttribute('readonly', 'readonly');
-	label.textContent = nombre_label;
 	input.value = valor_input;
 
-	div_contenedor.appendChild(label);
-	div_contenedor.appendChild(input);
+	label.appendChild(span);
+	label.appendChild(input);
 
-	contenedor.appendChild(div_contenedor);
+	contenedor.appendChild(label);
 }
 
 function bootstrapAlert(message, type) {
@@ -2048,14 +2048,72 @@ function fill_table(tipo) {
         });
 
 	}else if(tipo === 'servicio-facturado') {
+		$("#tabla_servicios_facturados thead").hide();
         table = $('#tabla_servicios_facturados').DataTable({
 			'dom': 'Bfrtip',
-			'autoWidth': false,
-			'responsive': true,
-			'pageLength': 12,
-			'destroy': true,
-			'scrollY': '560px',
-			'scrollCollapse': true,
+            'buttons': [
+                {
+                    'name': 'btn_detalles_servicios_facturados',
+                    'text': 'Detalles servicios facturados',
+                    'attr':  {
+                        'id': 'btn_detalles_servicios_facturados', 
+                        'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
+                        'disabled': true
+                    },
+                    'action':
+                        function(e) {
+                            servicios_facturados_selected_id = document.querySelector('#servicios_facturados_selected_id').value;
+
+                            if(!servicios_facturados_selected_id) {
+                                alert('No hay servicios facturados seleccionado');
+                                return;
+                            }
+
+                            fetch('/api/servicio-facturado/' + servicios_facturados_selected_id)
+                            .then(response => response.json())
+                            .then(servicio_facturado => {
+
+                                document.querySelector('#servicio_facturado_detalles_cedula').value = servicio_facturado.cliente.cedula;
+                                document.querySelector('#servicio_facturado_detalles_fullname').value = servicio_facturado.cliente.fullname;
+                                document.querySelector('#servicio_facturado_detalles_num_tlfno').value = servicio_facturado.cliente.num_tlf;
+                                document.querySelector('#servicio_facturado_detalles_precio').value = servicio_facturado.precio;
+
+
+								const contenedor = document.getElementById('servicios_informacion');
+								contenedor.innerHTML = '';
+								const serviciosFacturado = servicio_facturado.servicios;
+								serviciosFacturado.forEach((servicioFacturado) => {
+
+									const titulo = document.createElement('h4');
+									titulo.textContent = 'Servicios Asociados';
+									titulo.classList.add('servicios_titulo', 'text-lg', 'font-semibold', 'text-gray-600', 'dark:text-gray-300');
+									contenedor.appendChild(titulo);
+
+									const contenedor_labels = document.createElement('div')
+									contenedor_labels.classList.add('contenedor_labels')
+									contenedor.appendChild(contenedor_labels);
+
+									generar_div("Código", servicioFacturado.codigo, contenedor_labels)
+									generar_div("Nombre", servicioFacturado.nombre, contenedor_labels)
+									generar_div("Precio", servicioFacturado.precio, contenedor_labels)
+
+								});
+                            })
+                            .catch(function(error) {
+                                bootstrapAlert('Ha ocurrido un error al buscar el servicio', 'error');
+                                console.log('Error buscar servicio: ' + error);
+                            });
+
+                            modal('#detallesServiciosFacturadosModal', 'show');
+                        }
+                },
+			],
+			'select': true,
+            'bInfo': false,
+            'pageLength': 8,
+            'destroy': true,
+            'lengthChange': false,
+            'deferRender': true,
 			'language': {'url': '/media/datatables-languages/es-ES_default.json'},
 			'ajax': {
 				'url': '/api/servicio-facturado/',
@@ -2066,28 +2124,58 @@ function fill_table(tipo) {
 				 }
 			},
 			'columns': [
-				{'data': 'id'},
-				{'data': 'cliente.cedula'},
-				{'data': 'cliente.names'},
-				{'data': 'cliente.num_tlf'},
-				{'data': 'precio'},
-				{'data': 'id'},
-			],
-			'columnDefs': [
-				{'class': 'd-none', 'orderable': false, 'targets': [0]},
-				{
-					'orderable': false,
-					'width': 140,
-					'render': function (data, type, row) {
-						return `
-							<button type='button' class='btn btn-primary btn-sm btn_servicioFacturado_modal_detalles' data-toggle='tooltip' title='Información de Servicio'><i class='fa fa-book'></i></button>
-							<button type='button' class='btn btn-info btn-sm btn_reporte_factura_servicio' data-toggle='tooltip' title='Ver Factura'><i class='fa fa-eye'></i></button>
-						`;
-					},
-					'targets': [-1]
-				},
-			],
+                {
+                    render: function (data, type, row, meta) {
+                        html = `
+                            <input type="hidden" name="servicios_facturados_id" value="${row.id}">
+
+                            <div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
+                                <p class="mb-2 text-xl font-bold text-gray-300 dark:text-gray-300">
+                                    ${row.cliente.cedula}
+                                </p>
+                                <p class="text-lg text-gray-200 dark:text-gray-200">
+                                    ${row.cliente.fullname}
+                                </p>
+                                <p class="text-lg text-gray-200 dark:text-gray-200">
+                                    ${row.cliente.num_tlf}
+                                </p>
+								<p class="text-lg text-gray-200 dark:text-gray-200">
+									Monto: ${row.precio}
+								</p>
+                            </div>
+                        `;
+                        
+                        return html;
+                    }
+                },
+            ],
 		});
+
+		$('#tabla_servicios_facturados tbody').off('click', 'tr').on('click', 'tr', function () {
+            const servicios_facturados_selected = document.querySelector('#servicios_facturados_selected_id');
+            const current_servicio_facturado = this.querySelector('input[name="servicios_facturados_id"]') ? this.querySelector('input[name="servicios_facturados_id"]').value : '';
+
+
+            if ($(this).hasClass('selected')) {
+                $(this).removeClass('selected');
+                servicios_facturados_selected.value = '';
+            } else {
+                table.$('tr.selected').removeClass('selected');
+                $(this).addClass('selected');
+                servicios_facturados_selected.value = current_servicio_facturado;
+            }
+
+            btn_disabled_value = (servicios_facturados_selected.value == '');
+    
+            table.button('btn_detalles_servicios_facturados:name').nodes().attr('disabled', btn_disabled_value);
+            table.button('btn_modificar_servicios_facturados:name').nodes().attr('disabled', btn_disabled_value);
+            table.button('btn_toggle_servicios_facturados:name').nodes().attr('disabled', btn_disabled_value);
+        });
+
+        table.on('draw', function(data) {
+            $('#tabla_servicios_facturados tbody').addClass('flex flex-wrap');
+            $('#tabla_servicios_facturados tbody tr').addClass('lg:w-1/4 md:w-1/3 sm:w-full');
+        });
 	}
 }
 

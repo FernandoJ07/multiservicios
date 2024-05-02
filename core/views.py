@@ -71,7 +71,7 @@ def registroServicios(request):
 
 @login_required
 def servicioFacturado(request):
-    return render(request, "core/servicios_facturado.html")
+    return render(request, "core/servicios-facturado.html")
 
 def login_view(request):
 
