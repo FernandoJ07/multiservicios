@@ -394,229 +394,97 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 	
 	if(window.location.pathname.split('/')[1] === 'productos') {
+		// Modal Agregar producto
 		$('#btn_producto_modal_agregar').on('click', function() {
-			const proveedor_input = document.querySelector('#producto_agregar_proveedor');
-			proveedor_input.innerHTML = '';
+			modal('#agregarProductoModal', 'show');
 
-			var opt = document.createElement('option');
-			opt.value = "";
-			opt.innerHTML = "Seleccionar proveedor";
-			opt.setAttribute("selected", "selected");
-			proveedor_input.appendChild(opt);
+		});
 
-			fetch('/api/proveedores/')
-			.then(response => response.json())
-			.then(data => {
-				console.log(data)
-				data.forEach(proveedor => {
-					var opt = document.createElement('option');
-					opt.value = proveedor.rif;
-					opt.innerHTML = proveedor.names;
-					proveedor_input.appendChild(opt);
-				});
-			});
+		$('#producto_agregar_tipo').on('change', function () {
+			const container_producto_agregar_caucho = document.querySelector('#container_producto_agregar_caucho');
+			const container_producto_agregar_rin = document.querySelector('#container_producto_agregar_rin');
+			const selected_value = this.value;
+
+			if(selected_value == '2') {
+				container_producto_agregar_caucho.style.display = 'block';
+				container_producto_agregar_rin.style.display = 'none';
+
+			} else if(selected_value == '3') {
+				container_producto_agregar_caucho.style.display = 'none';
+				container_producto_agregar_rin.style.display = 'block';
+
+			} else {
+				container_producto_agregar_caucho.style.display = 'none';
+				container_producto_agregar_rin.style.display = 'none';
+			}
+
+
+			/* const precio = $("option[value=" + $(this).val() + "]", this).attr('data-precio');
+			const cantidad = $("option[value=" + $(this).val() + "]", this).attr('data-cantidad');
+
+			this.parentElement.parentElement.parentElement.querySelector('.input_precio').value = precio;
+			this.parentElement.parentElement.parentElement.querySelector('.input_precio_original').value = precio;
+			this.parentElement.parentElement.parentElement.querySelector('.input_cantidad').value = 1;
+			this.parentElement.parentElement.parentElement.querySelector('.input_cantidad').max = cantidad; */
+		});
+
+		// Agregar producto
+		$('#form_producto_agregar').submit(function(e) {
+			var form_agregar_data = $('#form_producto_agregar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
 			
-			$('#agregarProductoModal').modal('show');
-			});
-
-		$('#btn_producto_agregar_detalles').on('click', () => {
-			const producto_nombre = $('#producto_agregar_nombre').val();
-			const producto_tipo = $('#producto_agregar_tipo').val();
-			const producto_proveedor = $('#producto_agregar_proveedor').val();
-
-			if(!producto_nombre) {
-				bootstrapAlert('Debe ingresar nombre de producto!', 'warning'); return;
-			}
-
-			if(!producto_tipo) {
-				bootstrapAlert('Debe ingresar tipo de producto!', 'warning'); return;
-			}
-			
-			if(!producto_proveedor) {
-				bootstrapAlert('Debe ingresar proveedor de producto!', 'warning'); return;
-			}
-
-			$('#agregarProductoModal').modal('hide');
-
-			if(producto_tipo == '1') {
-				$('#agregarProductoInventarioModal').modal('show');
-			} else if(producto_tipo == '2') {
-				$('#agregarDetallesCauchoModal').modal('show');
-			} else if(producto_tipo == '3') {
-				$('#agregarDetallesLubricanteModal').modal('show');
-			}
-		});
-
-		$('#btn_producto_agregar_inventario_caucho').on('click', function() {
-			const caucho_marca = $('#producto_agregar_caucho_marca').val();
-			const caucho_medidas = $('#producto_agregar_caucho_medidas').val();
-			const caucho_calidad = $('#producto_agregar_caucho_calidad').val();
-			const caucho_fabricacion = $('#producto_agregar_caucho_fabricacion').val();
-
-			if(!caucho_marca || !caucho_medidas || !caucho_calidad || !caucho_fabricacion) {
-				bootstrapAlert('Debe ingresar toda la información del caucho!', 'warning'); return;
-			}
-
-			$('#agregarProductoModal').modal('hide');
-			$('#agregarDetallesCauchoModal').modal('hide');
-			$('#agregarProductoInventarioModal').modal('show');
-		});
-		
-		$('#btn_producto_agregar_inventario_lubricante').on('click', function() {
-			const lubricante_marca = $('#producto_agregar_lubricante_marca').val();
-			const lubricante_vizcosidad = $('#producto_agregar_lubricante_vizcosidad').val();
-			const lubricante_tipo = $('#producto_agregar_lubricante_tipo').val();
-
-			if(!lubricante_marca || !lubricante_vizcosidad || !lubricante_tipo) {
-				bootstrapAlert('Debe ingresar toda la información del lubricante!', 'warning'); return;
-			}
-
-			$('#agregarProductoModal').modal('hide');
-			$('#agregarDetallesLubricanteModal').modal('hide');
-			$('#agregarProductoInventarioModal').modal('show');
-		});
-
-		$('#btn_producto_agregar_caucho_atras').on('click', function() {
-			$('#agregarDetallesCauchoModal').modal('hide');
-			$('#agregarProductoInventarioModal').modal('hide');
-			$('#agregarProductoModal').modal('show');
-		});
-		$('#btn_producto_agregar_lubricante_atras').on('click', function() {
-			$('#agregarDetallesLubricanteModal').modal('hide');
-			$('#agregarProductoInventarioModal').modal('hide');
-			$('#agregarProductoModal').modal('show');
-		});
-		$('#btn_producto_agregar_atras').on('click', function() {
-			$('#agregarProductoInventarioModal').modal('hide');
-			$('#agregarProductoModal').modal('show');
-		});
-
-		$('#btn_producto_agregar_registrar').on('click', function() {
-			const producto_cantidad = $('#producto_agregar_cantidad').val();
-			const producto_precio = $('#producto_agregar_precio').val();
-
-			if(!producto_cantidad || !producto_precio) {
-				bootstrapAlert('Debe ingresar toda la información del producto!', 'warning'); return;
-			}
-
-			const producto = $('#form_agregar_producto').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
-			const inventario = $('#form_agregar_inventario').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
-			const data = {
-				producto: {...producto, ...inventario},
-				caucho: $('#form_agregar_caucho_detalles').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {}),
-				lubricante: $('#form_agregar_lubricante_detalles').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {})
-			};
-
-			fetch('/api/productos/', {
+			fetch('/api/productos/',{
 		    	method: 'POST',
-		    	body: JSON.stringify(data)
+		    	body: JSON.stringify(form_agregar_data)
 		   	})
 		    .then(response => response.json())
 		    .then(result => {
-				if(!result.error) {
-					$('#form_agregar_producto').get(0).reset();
-					$('#form_agregar_caucho_detalles').get(0).reset();
-					$('#form_agregar_lubricante_detalles').get(0).reset();
-					$('#form_agregar_inventario').get(0).reset();
-					$('#producto_agregar_nombre').attr('readonly', false);
+				console.log(result);
 
-					fill_table('productos');
-	
-					$('#agregarProductoInventarioModal').modal('hide');
-					$('#agregarDetallesLubricanteModal').modal('hide');
-					$('#agregarDetallesCauchoModal').modal('hide');
-					$('#agregarProductoModal').modal('hide');
-	
-					bootstrapAlert('Producto registrado!', 'success');
+		    	if(!result.error) {
+		    		bootstrapAlert('Producto registrado con éxito', 'success');
+					
+					modal('#agregarProductoModal', 'hide');
+		    		this.reset();
 
-				} else {
-					bootstrapAlert('Error al registrar producto!', 'danger');
-				}
+					document.querySelector('#container_producto_agregar_caucho').style.display = 'none';
+					document.querySelector('#container_producto_agregar_rin').style.display = 'none';
+
+		    		setTimeout(() => {
+		    			fill_table('productos');
+		    		}, 100);
+					
+				} else if(result.error == 'No permission.') {
+					modal('#agregarProductoModal', 'hide');
+					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de usuarios', 'error');
+
+		    	} else if(result.error == 'DoesNotExist.') {
+					modal('#agregarProductoModal', 'hide');
+		    		bootstrapAlert('usuario no está registrado', 'error');
+
+		    	} else if(result.error == 'CedulaNotUnique.') {
+		    		bootstrapAlert('Ya existe usuario registrado con este rif', 'error');
+					
+		    	} else if(result.error == 'ValueError.') {
+		    		bootstrapAlert('Ingrese todos los campos correctamente', 'error');
+
+		    	} else {
+		    		bootstrapAlert('Ha ocurrido un error al modificar la información del usuario!');
+		    	}
 		    })
 		    .catch(function(error) {
+		    	bootstrapAlert('Ha ocurrido un error al modificar la información del usuario!', 'error');
 		    	console.log('Error: ' + error);
 		    });
+
+			e.preventDefault();
 		});
-
-		// Acciones
-
-		// Modal detalles producto
-		$('#tabla_productos tbody').off('click', '.btn_producto_modal_detalles');
-		$('#tabla_productos tbody').on('click', '.btn_producto_modal_detalles', function () {
-			var row = $(this).parents('tr')[0];
-			producto_id = row.cells[0].innerHTML;
-
-			if(producto_id) {
-				fetch('/api/productos/' + producto_id)
-				.then(response => response.json())
-				.then(producto => {
-					$('#container_detalles_caucho').hide();
-					$('#container_detalles_lubricante').hide();
-
-					$('#producto_detalles_nombre').val(producto.nombre);
-					$('#producto_detalles_descripcion').val(producto.descripcion);
-
-					if(producto.producto_type == '2') {
-						$('#producto_detalles_caucho_marca').val(producto.extra.marca);
-						$('#producto_detalles_caucho_medidas').val(producto.extra.medidas);
-						$('#producto_detalles_caucho_calidad').val(producto.extra.calidad);
-						$('#producto_detalles_caucho_fabricacion').val(producto.extra.fecha_fabricacion);
-
-						$('#container_detalles_caucho').show();
-
-					} else if(producto.producto_type == '3') {
-						$('#producto_detalles_lubricante_marca').val(producto.extra.marca);
-						$('#producto_detalles_lubricante_vizcosidad').val(producto.extra.vizcosidad);
-						$('#producto_detalles_lubricante_tipo').val(producto.extra.tipo);
-
-						$('#container_detalles_lubricante').show();
-					}
-				})
-				.catch(function(error) {
-					bootstrapAlert('Error al buscar producto', 'danger');
-				});
-
-				$('#detallesClienteModal').modal('show');
-			} else {
-				bootstrapAlert('No hay producto seleccionado!', 'danger');
-			}
-
-			$('#detallesProductoModal').modal('show');
-		});
-
-		// Modal modificar producto
-		$('#tabla_productos tbody').off('click', '.btn_producto_modal_modificar');
-		$('#tabla_productos tbody').on('click', '.btn_producto_modal_modificar', function () {
-			row = $(this).parents('tr')[0];
-			producto_id = row.cells[0].innerHTML;
-			document.querySelector('#producto_modificar_id').value = producto_id;
-
-			if(producto_id) {
-				fetch('/api/productos/' + producto_id)
-				.then(response => response.json())
-				.then(producto => {
-					document.querySelector('#producto_modificar_nombre').value = producto.nombre;
-					document.querySelector('#producto_modificar_precio').value = producto.precio;
-					document.querySelector('#producto_modificar_descripcion').value = producto.descripcion;
-				})
-				.catch(function(error) {
-					bootstrapAlert('Ha ocurrido un error al buscar el producto en el inventario', 'error');
-				});
-
-				$('#modificarProductoModal').modal('show');
-			}
-
-			$('#modificarProductoModal').modal('show');
-		});
-
-		
 
 		// Modificar producto
 		$('#form_producto_modificar').submit(function(e) {
-			producto_id = document.querySelector('#producto_modificar_id').value;
-			form_modificar_data = $('#form_producto_modificar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
-			console.log(form_modificar_data)
-			fetch('/api/productos/' + producto_id, {
+			productos_selected_id = document.querySelector('#productos_selected_id').value;
+			var form_modificar_data = $('#form_producto_modificar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
+
+			fetch('/api/productos/' + productos_selected_id, {
 		    	method: 'PUT',
 		    	body: JSON.stringify(form_modificar_data)
 		   	})
@@ -624,126 +492,36 @@ document.addEventListener('DOMContentLoaded', function() {
 		    .then(result => {
 		    	if(!result.error) {
 		    		bootstrapAlert('Producto modificado con éxito', 'success');
-		    		$('#modificarProductoModal').modal('hide');
+
+		    		modal('#modificarProductoModal', 'hide');
 		    		this.reset();
+
+					document.querySelector('#container_producto_modificar_caucho').style.display = 'none';
+					document.querySelector('#container_producto_modificar_rin').style.display = 'none';
 
 		    		setTimeout(() => {
 		    			fill_table('productos');
 		    		}, 100);
 				} else if(result.error == 'No permission.') {
-					$('#modificarProductoModal').modal('hide');
-					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de productos', 'info');
+					modal('#modificarProductoModal', 'hide');
+					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de Proveedors', 'error');
 		    	} else if(result.error == 'DoesNotExist.') {
-		    		$('#modificarProductoModal').modal('hide');
-		    		bootstrapAlert('Producto no registrado', 'warning');
+		    		modal('#modificarProductoModal', 'hide');
+		    		bootstrapAlert('Proveedor no está registrado', 'error');
+		    	} else if(result.error == 'CedulaNotUnique.') {
+		    		bootstrapAlert('Ya existe Proveedor registrado con esta cédula de identidad', 'error');
 		    	} else if(result.error == 'ValueError.') {
-		    		bootstrapAlert('Ingrese todos los campos correctamente', 'warning');
+		    		bootstrapAlert('Ingrese todos los campos correctamente', 'error');
 		    	} else {
-		    		bootstrapAlert('Ha ocurrido un error al modificar la información del producto!', 'warning');
+		    		bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!');
 		    	}
 		    })
 		    .catch(function(error) {
-		    	bootstrapAlert('Ha ocurrido un error al modificar la información del producto!', 'warning');
+		    	bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!', 'error');
 		    	console.log('Error: ' + error);
 		    });
 
 			e.preventDefault();
-
-		});
-
-		// Modal añadir producto
-		$('#tabla_productos tbody').off('click', '.btn_producto_modal_añadir');
-		$('#tabla_productos tbody').on('click', '.btn_producto_modal_añadir', function () {
-			var row = $(this).parents('tr')[0];
-			producto_id = row.cells[0].innerHTML;
-
-			$('#producto_añadir_id').val(producto_id);
-
-			$('#añadirProductoModal').modal('show');
-		});
-
-		// Añadir producto
-		$('#btn_producto_añadir').on('click', function() {
-			const producto_id = $('#producto_añadir_id').val();
-			const producto_cantidad = $('#producto_añadir_cantidad').val();
-
-			if(!producto_id) {
-				bootstrapAlert('No hay producto seleccionado!', 'danger'); return;
-			}
-
-			if(!producto_cantidad) {
-				bootstrapAlert('Debe ingresar cantidad del producto!', 'warning'); return;
-			}
-
-			fetch('/api/productos/' + producto_id + '/add', {
-		    	method: 'PATCH',
-		    	body: JSON.stringify({ id: producto_id, cantidad: producto_cantidad })
-		   	})
-		    .then(response => response.json())
-		    .then(result => {
-				if(!result.error) {
-					$('#form_añadir_producto').get(0).reset();
-					fill_table('productos');
-	
-					$('#añadirProductoModal').modal('hide');
-	
-					bootstrapAlert('Producto añadido!', 'success');
-				} else {
-					bootstrapAlert('Error al añadir producto!', 'danger');
-				}
-		    })
-		    .catch(function(error) {
-		    	console.log('Error: ' + error);
-		    });
-		});
-
-		// Modal remover producto
-		$('#tabla_productos tbody').off('click', '.btn_producto_modal_remover');
-		$('#tabla_productos tbody').on('click', '.btn_producto_modal_remover', function () {
-			var row = $(this).parents('tr')[0];
-			producto_id = row.cells[0].innerHTML;
-
-			$('#producto_remover_id').val(producto_id);
-
-			$('#removerProductoModal').modal('show');
-		});
-
-		// Remover producto
-		$('#btn_producto_remover').on('click', function() {
-			const producto_id = $('#producto_remover_id').val();
-			const producto_cantidad = $('#producto_remover_cantidad').val();
-
-			if(!producto_id) {
-				bootstrapAlert('No hay producto seleccionado!', 'danger'); return;
-			}
-
-			if(!producto_cantidad) {
-				bootstrapAlert('Debe ingresar cantidad del producto!', 'warning'); return;
-			}
-
-			fetch('/api/productos/' + producto_id + '/remove', {
-		    	method: 'PATCH',
-		    	body: JSON.stringify({ id: producto_id, cantidad: producto_cantidad })
-		   	})
-		    .then(response => response.json())
-		    .then(result => {
-				if(!result.error) {
-					$('#form_remover_producto').get(0).reset();
-					fill_table('productos');
-	
-					$('#removerProductoModal').modal('hide');
-	
-					bootstrapAlert('Producto removido!', 'success');
-
-				} else if(result.error == 'InvalidAmount.') {
-		    		bootstrapAlert('La cantidad a remover debe ser menor a la cantidad de producto actual!', 'warning');
-		    	} else {
-					bootstrapAlert('Error al remover producto!', 'danger');
-				}
-		    })
-		    .catch(function(error) {
-		    	console.log('Error: ' + error);
-		    });
 		});
 
 		fill_table('productos');
@@ -1849,49 +1627,201 @@ function fill_table(tipo) {
             $('#tabla_proveedores tbody tr').addClass('lg:w-1/4 md:w-1/3 sm:w-full');
         });
     } else if(tipo === 'productos') {
+
+		$("#tabla_productos thead").hide();
+
         table = $('#tabla_productos').DataTable({
-			'dom': 'Bfrtip',
-			'autoWidth': false,
-			'responsive': true,
-			'pageLength': 12,
-			'destroy': true,
-			'scrollY': '560px',
-			'scrollCollapse': true,
-			'language': {'url': '/media/datatables-languages/es-ES_default.json'},
-			'ajax': {
-				'url': '/api/productos',
-				'type': 'GET',
-				'dataSrc': '',
-				'error': function(jqXHR, ajaxOptions, thrownError) {
-					bootstrapAlert('Ha ocurrido un error al cargar inventario', 'danger');
-					console.log('Error buscar productos: ' + thrownError);
-				 }
-			},
-			'columns': [
-				{'data': 'id'},
-				{'data': 'nombre'},
-				{'data': 'proveedor'},
-				{'data': 'cantidad'},
-				{'data': 'precio'},
-				{'data': 'id'},
-			],
-			'columnDefs': [
-				{'class': 'd-none', 'orderable': false, 'targets': [0]},
+            'dom': 'Bfrtip',
+			'buttons': [
 				{
-					'orderable': false,
-					'width': 140,
-					'render': function (data, type, row) {
-						return `
-							<button type='button' class='btn btn-primary btn-sm btn_producto_modal_detalles' data-toggle='tooltip' title='Información de producto'><i class='fa fa-book'></i></button>
-							<button type='button' class='btn btn-warning btn-sm btn_producto_modal_modificar' data-toggle='tooltip' title='Modificar Producto'><i class='fa fa-pen'></i></button>
-							<button type='button' class='btn btn-success btn-sm btn_producto_modal_añadir' data-toggle='tooltip' title='Añadir producto'><i class='fa fa-plus'></i></button>
-							<button type='button' class='btn btn-danger btn-sm btn_producto_modal_remover' data-toggle='tooltip' title='Remover producto'><i class='fa fa-minus'></i></button>
-						`;
+					'name': 'btn_detalles_producto',
+					'text': 'Detalles producto',
+					'attr':  {
+						'id': 'btn_detalles_producto', 
+						'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
+						'disabled': true
 					},
-					'targets': [-1]
+					'action':
+						function(e) {
+							productos_selected_id = document.querySelector('#productos_selected_id').value;
+
+							if(!productos_selected_id) {
+								alert('No hay producto seleccionado');
+								return;
+							}
+
+							fetch('/api/productos/' + productos_selected_id)
+							.then(response => response.json())
+							.then(producto => {
+								$('#container_producto_detalles_caucho').hide();
+								$('#container_producto_detalles_rin').hide();
+
+								document.querySelector('#producto_detalles_nombre').value = producto.nombre;
+								document.querySelector('#producto_detalles_descripcion').value = producto.descripcion;
+								document.querySelector('#producto_detalles_cantidad').value = producto.cantidad;
+								document.querySelector('#producto_detalles_precio').value = producto.precio;
+
+								if(producto.producto_type == '2') {
+									document.querySelector('#producto_detalles_caucho_marca').value = producto.extra.marca;
+									document.querySelector('#producto_detalles_caucho_medidas').value = producto.extra.medidas;
+									document.querySelector('#producto_detalles_caucho_calidad').value = producto.extra.calidad;
+									document.querySelector('#producto_detalles_caucho_fabricacion').value = producto.extra.fecha_fabricacion;
+
+									$('#container_producto_detalles_caucho').show();
+								}
+
+								if(producto.producto_type == '3') {
+									document.querySelector('#producto_detalles_rin_marca').value = producto.extra.marca;
+									document.querySelector('#producto_detalles_rin_material').value = producto.extra.material;
+									document.querySelector('#producto_detalles_rin_tamano').value = producto.extra.tamano;
+									document.querySelector('#producto_detalles_rin_fabricacion').value = producto.extra.fecha_fabricacion;
+
+									$('#container_producto_detalles_rin').show();
+								}
+
+							})
+							.catch(function(error) {
+								console.log('Error buscar cliente: ' + error);
+							});
+
+							modal('#detallesProductoModal', 'show');
+						}
 				},
+				{
+					'name': 'btn_modificar_producto',
+					'text': 'Modificar',
+					'attr':  {
+						'id': 'btn_modificar_producto', 
+						'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
+						'disabled': true
+					},
+					'action':
+						function(e) {
+							productos_selected_id = document.querySelector('#productos_selected_id').value;
+
+							if(!productos_selected_id) {
+								alert('No hay producto seleccionado');
+								return;
+							}
+
+							fetch('/api/productos/' + productos_selected_id)
+							.then(response => response.json())
+							.then(producto => {
+								$('#container_producto_modificar_caucho').hide();
+								$('#container_producto_modificar_rin').hide();
+
+								document.querySelector('#producto_modificar_nombre').value = producto.nombre;
+								document.querySelector('#producto_modificar_descripcion').value = producto.descripcion;
+								document.querySelector('#producto_modificar_precio').value = producto.precio;
+
+								document.querySelector('#producto_modificar_tipo').value = producto.producto_type;
+
+								if(producto.producto_type == '2') {
+									document.querySelector('#producto_modificar_caucho_marca').value = producto.extra.marca;
+									document.querySelector('#producto_modificar_caucho_medidas').value = producto.extra.medidas;
+									document.querySelector('#producto_modificar_caucho_calidad').value = producto.extra.calidad;
+									document.querySelector('#producto_modificar_caucho_fabricacion').value = producto.extra.fecha_fabricacion;
+
+									$('#container_producto_modificar_caucho').show();
+								}
+
+								if(producto.producto_type == '3') {
+									document.querySelector('#producto_modificar_rin_marca').value = producto.extra.marca;
+									document.querySelector('#producto_modificar_rin_material').value = producto.extra.material;
+									document.querySelector('#producto_modificar_rin_tamano').value = producto.extra.tamano;
+									document.querySelector('#producto_modificar_rin_fabricacion').value = producto.extra.fecha_fabricacion;
+
+									$('#container_producto_modificar_rin').show();
+								}
+
+							})
+							.catch(function(error) {
+								console.log('Error buscar cliente: ' + error);
+							});
+
+							modal('#modificarProductoModal', 'show');
+						}
+				},
+				{
+					'name': 'btn_toggle_producto',
+					'text': 'Eliminar',
+					'attr':  {
+						'id': 'btn_toggle_producto', 
+						'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
+						'disabled': true
+					},
+					'action':
+						function(e) {
+							alert('asd');
+						}
+				}
 			],
+			'select': true,
+            'bInfo': false,
+            'pageLength': 8,
+            'destroy': true,
+            'lengthChange': false,
+            'deferRender': true,
+            'language': { 'url': '/media/datatables-languages/es-ES_custom.json' },
+            'ajax': {
+                'url': '/api/productos',
+                'type': 'GET',
+                'dataSrc': '',
+                'error': function (jqXHR, ajaxOptions, thrownError) {
+                    bootstrapAlert('Ha ocurrido un error al cargar la lista de productos', 'error');
+                    console.log('Error buscar productos: ' + thrownError);
+                }
+            },
+            'columns': [
+                {
+                    render: function (data, type, row, meta) {
+                        const html = `
+                        	<input type="hidden" name="producto_id" value="${row.id}">
+
+							<div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
+								<p class="mb-2 text-xl font-bold text-gray-300 dark:text-gray-300">
+									${row.nombre}
+								</p>
+								<p class="text-lg text-gray-200 dark:text-gray-200">
+									Cantidad: ${row.cantidad}
+								</p>
+								<p class="text-lg text-gray-200 dark:text-gray-200">
+									Precio: ${row.precio}
+								</p>
+							</div>
+                        `;
+
+                        return html;
+                    }
+                },
+            ],
+        });
+
+		$('#tabla_productos tbody').off('click', 'tr').on('click', 'tr', function () {
+			const productos_selected = document.querySelector('#productos_selected_id');
+			const current_producto = this.querySelector('input[name="producto_id"]') ? this.querySelector('input[name="producto_id"]').value : '';
+
+			if ($(this).hasClass('selected')) {
+				$(this).removeClass('selected');
+				productos_selected.value = '';
+			} else {
+				table.$('tr.selected').removeClass('selected');
+				$(this).addClass('selected');
+				productos_selected.value = current_producto;
+			}
+
+			btn_disabled_value = (productos_selected.value == '');
+	
+			table.button('btn_detalles_producto:name').nodes().attr('disabled', btn_disabled_value);
+			table.button('btn_modificar_producto:name').nodes().attr('disabled', btn_disabled_value);
+			table.button('btn_toggle_producto:name').nodes().attr('disabled', btn_disabled_value);
 		});
+
+		table.on('draw', function(data) {
+			$('#tabla_productos tbody').addClass('flex flex-wrap');
+			$('#tabla_productos tbody tr').addClass('lg:w-1/4 md:w-1/3 sm:w-full');
+		});
+
     } else if(tipo === 'ventas') {
         table = $('#tabla_ventas').DataTable({
 			'dom': 'Bfrtip',
