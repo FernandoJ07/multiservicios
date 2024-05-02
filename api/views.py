@@ -492,7 +492,7 @@ def servicios(request, id=None):
         return JsonResponse([servicio.serialize() for servicio in Servicio.objects.all()], safe=False)
     
     if request.method == "POST":
-        
+
         if id == None:
             try:
                 data = json.loads(request.body)

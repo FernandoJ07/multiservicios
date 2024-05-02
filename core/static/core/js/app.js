@@ -983,95 +983,44 @@ document.addEventListener('DOMContentLoaded', function() {
         
 		// Agregar servicio
 		$('#btn_servicio_modal_agregar').on('click', function() {
-			$('#agregarServicioModal').modal('show');
+			modal('#agregarServicioModal', 'show');
 		});
 
-		$('#btn_servicio_agregar_registrar').on('click', function() {
+		// Agregar servicio
+		$('#form_servicio_agregar').submit(function(e) {
 
-			const servicio = $('#form_servicio_agregar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
-			
+			const form_agregar_data = $('#form_servicio_agregar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
+
 			fetch('/api/servicios/', {
 		    	method: 'POST',
-		    	body: JSON.stringify(servicio)
+		    	body: JSON.stringify(form_agregar_data)
 		   	})
 		    .then(response => response.json())
 		    .then(result => {
 				if(!result.error) {
-					$('#form_servicio_agregar').get(0).reset();
-					fill_table('servicios');
-	
-					$('#agregarServicioModal').modal('hide');
-	
 					bootstrapAlert(result.message, 'success');
+					modal('#agregarServicioModal', 'hide');
+		    		this.reset();
+
+		    		setTimeout(() => {
+		    			fill_table('servicios');
+		    		}, 100);
+
 				}
 				else {
 					bootstrapAlert('Error al registrar el servicio!', 'danger');
 				}
 		    })
 		    .catch(function(error) {
-		    	console.log('Error: ' + error);
 				bootstrapAlert('Error en la conexión o respuesta del servidor.', 'danger');
 		    });
-		});
 
-		// Modal detalles servicio
-		$('#tabla_servicios tbody').off('click', '.btn_servicio_modal_detalles');
-		$('#tabla_servicios tbody').on('click', '.btn_servicio_modal_detalles', function () {
-			row = $(this).parents('tr')[0];
-			servicio_id = row.cells[0].innerHTML;
-
-			if(servicio_id) {
-				fetch('/api/servicios/' + servicio_id)
-				.then(response => response.json())
-				.then(servicio => {
-					document.querySelector('#servicio_detalles_codigo').value = servicio.codigo;
-					document.querySelector('#servicio_detalles_nombre').value = servicio.nombre;
-					document.querySelector('#servicio_detalles_precio').value = servicio.precio;
-
-				})
-				.catch(function(error) {
-					bootstrapAlert('Ha ocurrido un error al buscar el servicio', 'error');
-				});
-
-				$('#detallesServicioModal').modal('show');
-			} else {
-				bootstrapAlert('No se ha seleccionado ningún servicio', 'info');
-			}
-		});
-
-		
-		// Modal modificar servicio
-		$('#tabla_servicios tbody').off('click', '.btn_servicio_modal_modificar');
-		$('#tabla_servicios tbody').on('click', '.btn_servicio_modal_modificar', function () {
-
-			row = $(this).parents('tr')[0];
-			servicio_id = row.cells[0].innerHTML;
-			document.querySelector('#servicio_modificar_id').value = servicio_id;
-
-			if(servicio_id) {
-				fetch('/api/servicios/' + servicio_id)
-				.then(response => response.json())
-				.then(servicio => {
-					document.querySelector('#servicio_modificar_codigo').value = servicio.codigo;
-					document.querySelector('#servicio_modificar_nombre').value = servicio.nombre;
-					document.querySelector('#servicio_modificar_precio').value = servicio.precio;
-
-				})
-				.catch(function(error) {
-					bootstrapAlert('Ha ocurrido un error al buscar el servicio', 'error');
-				});
-
-				$('#modificarServicioModal').modal('show');
-			} else {
-				bootstrapAlert('No se ha seleccionado ningún servicio', 'info');
-			}
-
-			$('#modificarServicioModal').modal('show');
+			e.preventDefault();
 		});
 
 		// Modificar servicio
 		$('#form_servicio_modificar').submit(function(e) {
-			servicio_id = document.querySelector('#servicio_modificar_id').value;
+			servicio_id = document.querySelector('#servicios_selected_id').value;
 			form_modificar_data = $('#form_servicio_modificar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
 			
 			fetch('/api/servicios/' + servicio_id, {
@@ -1082,14 +1031,13 @@ document.addEventListener('DOMContentLoaded', function() {
 		    .then(result => {
 		    	if(!result.error) {
 		    		bootstrapAlert('Servicio modificado con éxito', 'success');
-		    		$('#modificarServicioModal').modal('hide');
+		    		modal('#modificarServicioModal', 'hide');
 		    		this.reset();
 
 		    		setTimeout(() => {
 		    			fill_table('servicios');
 		    		}, 100);
 		    	} else if(result.error == 'DoesNotExist.') {
-		    		$('#error').modal('hide');
 		    		bootstrapAlert('Servicio no está registrado', 'warning');
 		    	} else if(result.error == 'ValueError.') {
 		    		bootstrapAlert('Ingrese todos los campos correctamente', 'warning');
@@ -1105,36 +1053,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		});
 
-		// Modal eliminar servicio
-		$('#tabla_servicios tbody').off('click', '.btn_servicio_modal_eliminar');
-		$('#tabla_servicios tbody').on('click', '.btn_servicio_modal_eliminar', function () {
-			row = $(this).parents('tr')[0];
-			servicio_id = row.cells[0].innerHTML;
-			document.querySelector('#servicio_eliminar_id').value = servicio_id;
-			$('#eliminarServicioModal').modal('show');
-		});
-
 		// Eliminar servicio
-		$('#btn_servicio_eliminar').on('click', function() {
-			servicio_id = document.querySelector('#servicio_eliminar_id').value;
+		$('#btn_usuario_eliminar').on('click', function() {
+			servicios_selected_id = document.querySelector('#servicios_selected_id').value;
 
-			fetch('/api/servicios/' + servicio_id, {
+			fetch('/api/servicios/' + servicios_selected_id, {
 		    	method: 'DELETE',
-		    	body: JSON.stringify(servicio_id)
+		    	body: JSON.stringify({})
 		   	})
 		    .then(response => response.json())
 		    .then(result => {
 		    	if(!result.error) {
-		    		$('#eliminarServicioModal').modal('hide');
+					modal('#eliminarServicioModal', 'hide');
+
 		    		bootstrapAlert('Servicio eliminado correctamente', 'success');
 		    		setTimeout(() => {
 						fill_table('servicios');
 					}, 100);
+
 		    	} else if(result.error == 'DoesNotExist.') {
-		    		$('#eliminarServicioModal').modal('hide');
+		    		modal('#eliminarServicioModal', 'hide');
 		    		bootstrapAlert('Servicio no está registrado', 'warning');
 		    	}else if(result.error == 'No permission.') {
-					$('#modificarProductoModal').modal('hide');
+					modal('#eliminarServicioModal', 'hide');
 					bootstrapAlert('Tu cuenta no tiene permisos para eliminar servicios', 'info');
 				}else {
 		    		bootstrapAlert('Ha ocurrido un error al eliminar servicio', 'error');
@@ -2026,47 +1967,156 @@ function fill_table(tipo) {
 			
 		});
     }else if(tipo === 'servicios') {
+        $("#tabla_servicios thead").hide();
         table = $('#tabla_servicios').DataTable({
 			'dom': 'Bfrtip',
-			'autoWidth': false,
-			'responsive': true,
-			'pageLength': 12,
-			'destroy': true,
-			'scrollY': '560px',
-			'scrollCollapse': true,
+			'buttons': [
+                {
+                    'name': 'btn_detalles_servicio',
+                    'text': 'Detalles servicio',
+                    'attr':  {
+                        'id': 'btn_detalles_servicio', 
+                        'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
+                        'disabled': true
+                    },
+                    'action':
+                        function(e) {
+                            servicios_selected_id = document.querySelector('#servicios_selected_id').value;
+
+                            if(!servicios_selected_id) {
+                                alert('No hay servicios seleccionado');
+                                return;
+                            }
+
+                            fetch('/api/servicios/' + servicios_selected_id)
+                            .then(response => response.json())
+                            .then(servicio => {
+                                document.querySelector('#servicio_detalles_codigo').value = servicio.codigo;
+								document.querySelector('#servicio_detalles_nombre').value = servicio.nombre;
+                                document.querySelector('#servicio_detalles_precio').value = servicio.precio;
+                            })
+                            .catch(function(error) {
+                                bootstrapAlert('Ha ocurrido un error al buscar el servicio', 'error');
+                                console.log('Error buscar servicio: ' + error);
+                            });
+
+                            modal('#detallesServicioModal', 'show');
+                        }
+                },
+                {
+                    'name': 'btn_modificar_servicio',
+                    'text': 'Modificar',
+                    'attr':  {
+                        'id': 'btn_modificar_servicio', 
+                        'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
+                        'disabled': true
+                    },
+                    'action':
+                        function(e) {
+                            servicios_selected_id = document.querySelector('#servicios_selected_id').value;
+
+                            if(!servicios_selected_id) {
+                                alert('No hay servicio seleccionado');
+                                return;
+                            }
+
+                            fetch('/api/servicios/' + servicios_selected_id)
+                            .then(response => response.json())
+                            .then(servicio => {
+                                document.querySelector('#servicio_modificar_codigo').value = servicio.codigo;
+                                document.querySelector('#servicio_modificar_nombre').value = servicio.nombre;
+                                document.querySelector('#servicio_modificar_precio').value = servicio.precio;
+                            })
+                            .catch(function(error) {
+                                bootstrapAlert('Ha ocurrido un error al buscar el servicio', 'error');
+                                console.log('Error buscar servicio: ' + error);
+                            });
+
+                            modal('#modificarServicioModal', 'show');
+                        }
+                },
+                {
+                    'name': 'btn_toggle_servicio',
+                    'text': 'Eliminar',
+                    'attr':  {
+                        'id': 'btn_toggle_servicio', 
+                        'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
+                        'disabled': true
+                    },
+                    'action':
+                        function(e) {
+                            modal('#eliminarServicioModal', 'show');
+                        }
+                }
+            ],
+			'select': true,
+            'bInfo': false,
+            'pageLength': 8,
+            'destroy': true,
+            'lengthChange': false,
+            'deferRender': true,
 			'language': {'url': '/media/datatables-languages/es-ES_default.json'},
 			'ajax': {
 				'url': '/api/servicios',
 				'type': 'GET',
 				'dataSrc': '',
 				'error': function(jqXHR, ajaxOptions, thrownError) {
-					bootstrapAlert('Ha ocurrido un error al cargar los servicios', 'danger');
+					bootstrapAlert('Ha ocurrido un error al cargar los servicios', 'error');
+					console.log('Error buscar servicios: ' + thrownError);
 				 }
 			},
 			'columns': [
-				{'data': 'id'},
-				{'data': 'codigo'},
-				{'data': 'nombre'},
-				{'data': 'precio'},
-				{'data': 'id'},
-			],
-			'columnDefs': [
-				{'class': 'd-none', 'orderable': false, 'targets': [0]},
-				{
-					'orderable': false,
-					'width': 140,
-					'render': function (data, type, row) {
-						return `
-							<button type='button' class='btn btn-primary btn-sm btn_servicio_modal_detalles' data-toggle='tooltip' title='Información de Servicio'><i class='fa fa-book'></i></button>
-							<button type='button' class='btn btn-success btn-sm btn_servicio_modal_modificar' data-toggle='tooltip' title='Modificar Servicio'><i class='fa fa-pen'></i></button>
-							<button type='button' class='btn btn-danger btn-sm btn_servicio_modal_eliminar' data-toggle='tooltip' title='Eliminar Servicio'><i class='fa fa-trash'></i></button>
+                {
+                    render: function (data, type, row, meta) {
+						
+						html = `
+							<input type="hidden" name="servicio_id" value="${row.id}">
 
+							<div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
+								<p class="mb-2 text-xl font-bold text-gray-300 dark:text-gray-300">
+									Codigo: ${row.codigo}
+								</p>
+								<p class="text-lg text-gray-200 dark:text-gray-200">
+									${row.nombre}
+								</p>
+								<p class="text-lg text-gray-200 dark:text-gray-200">
+									${row.precio}
+								</p>
+							</div>
 						`;
-					},
-					'targets': [-1]
-				},
-			],
+						
+                        return html;
+                    }
+                },
+            ],
 		});
+
+		$('#tabla_servicios tbody').off('click', 'tr').on('click', 'tr', function () {
+            const servicios_selected = document.querySelector('#servicios_selected_id');
+            const current_servicio = this.querySelector('input[name="servicio_id"]') ? this.querySelector('input[name="servicio_id"]').value : '';
+
+
+            if ($(this).hasClass('selected')) {
+                $(this).removeClass('selected');
+                servicios_selected.value = '';
+            } else {
+                table.$('tr.selected').removeClass('selected');
+                $(this).addClass('selected');
+                servicios_selected.value = current_servicio;
+            }
+
+            btn_disabled_value = (servicios_selected.value == '');
+    
+            table.button('btn_detalles_servicio:name').nodes().attr('disabled', btn_disabled_value);
+            table.button('btn_modificar_servicio:name').nodes().attr('disabled', btn_disabled_value);
+            table.button('btn_toggle_servicio:name').nodes().attr('disabled', btn_disabled_value);
+        });
+
+        table.on('draw', function(data) {
+            $('#tabla_servicios tbody').addClass('flex flex-wrap');
+            $('#tabla_servicios tbody tr').addClass('lg:w-1/4 md:w-1/3 sm:w-full');
+        });
+
 	}else if(tipo === 'servicio-facturado') {
         table = $('#tabla_servicios_facturados').DataTable({
 			'dom': 'Bfrtip',
