@@ -253,26 +253,42 @@ def productos(request, id=None, action=None):
     if request.method == "POST":
         data = json.loads(request.body)
 
-        producto_info = data['producto']
-        producto_tipo = data['producto'].get("producto_type", '1')
+        producto_tipo = data.get("producto_type", "1")
+        producto_nombre = data.get("nombre", "")
+        producto_descripcion = data.get("descripcion", "")
+        producto_cantidad = data.get("cantidad", 0)
+        producto_precio = data.get("precio", 0)
 
-        detalles_caucho = data.get('caucho', {})
-        detalles_lubricante = data.get('lubricante', {})
+        producto_proveedor = Proveedor.objects.all().first().rif
+
+        caucho_marca = data.get("caucho_marca", "")
+        caucho_medidas = data.get("caucho_medidas", "")
+        caucho_calidad = data.get("caucho_calidad", "")
+        caucho_fabricacion = data.get("caucho_fabricacion", "")
+        
+        rin_marca = data.get("rin_marca", "")
+        rin_material = data.get("rin_material", "")
+        rin_tamano = data.get("rin_tamano", "")
+        rin_fabricacion = data.get("rin_fabricacion", "")
 
         if producto_tipo == ProductoTypeChoices.PRODUCTO.value:
-            producto = Producto.create_producto(**producto_info)
+            producto = Producto.create_producto(producto_nombre, producto_descripcion, producto_cantidad, producto_precio, producto_tipo, producto_proveedor)
         
         elif producto_tipo == ProductoTypeChoices.CAUCHO.value:
-            producto = Caucho.create_caucho(detalles=detalles_caucho, **producto_info)
+            detalles = {"marca": caucho_marca, "medidas": caucho_medidas, "calidad": caucho_calidad, "fecha_fabricacion": caucho_fabricacion}
 
-        elif producto_tipo == ProductoTypeChoices.LUBRICANTE.value:
-            producto = Lubricante.create_lubricante(detalles=detalles_lubricante, **producto_info)
+            producto = Caucho.create_caucho(producto_nombre, producto_descripcion, producto_cantidad, producto_precio, producto_tipo, producto_proveedor, detalles)
+
+        elif producto_tipo == ProductoTypeChoices.RIN.value:
+            detalles = {"marca": rin_marca, "material": rin_material, "tamano": rin_tamano, "fecha_fabricacion": rin_fabricacion}
+
+            producto = Rin.create_rin(producto_nombre, producto_descripcion, producto_cantidad, producto_precio, producto_tipo, producto_proveedor, detalles)
 
         else:
             producto = None
 
         if producto != None:
-            Transaccion.objects.create(producto=producto, accion="METER", cantidad = data['producto'].get("cantidad"))
+            Transaccion.objects.create(producto=producto, accion="METER", cantidad=producto_cantidad)
 
         return JsonResponse({"message": "Producto agregado."}, status=201)
     
@@ -332,25 +348,47 @@ def productos(request, id=None, action=None):
     
     if request.method == "PUT":
         data = json.loads(request.body)
-        print(data)
-        
+
+        producto_tipo = data.get("producto_type", "1")
         if id != None:
             if not Producto.objects.filter(id=id).exists():
                 return JsonResponse({"error": "DoesNotExist."}, status=417)
-            
+
             dataProducto = {
-                'nombre': data['nombre'],
-                'descripcion': data['descripcion']
+                'nombre': data.get("nombre", ""),
+                'descripcion': data.get("descripcion", "")
             }
 
             dataInventario = {
-                'precio':  data['precio']
+                'precio':  data.get("precio", 0)
+            }
+            
+            dataCaucho = {
+                'marca': data.get("caucho_marca", ""),
+                'medidas': data.get("caucho_medidas", ""),
+                'calidad': data.get("caucho_calidad", ""),
+                'fecha_fabricacion': data.get("caucho_fabricacion", "")
+            }
+
+            dataRin = {
+                'marca': data.get("rin_marca", ""),
+                'material': data.get("rin_material", ""),
+                'tamano': data.get("rin_tamano", ""),
+                'fecha_fabricacion': data.get("rin_fabricacion", "")
             }
 
             try:
-                producto = Producto.objects.filter(id=id).update(**dataProducto)
+                Producto.objects.filter(id=id).update(**dataProducto)
                 Inventario.objects.filter(producto=id).update(**dataInventario)
+
+                if producto_tipo == ProductoTypeChoices.CAUCHO:
+                    Caucho.objects.filter(id=id).update(**dataCaucho)
+
+                elif producto_tipo == ProductoTypeChoices.RIN:
+                    Rin.objects.filter(id=id).update(**dataRin)
+
                 return JsonResponse({"message": "Producto modificado."}, status=201)
+
             except IntegrityError as e:
                 return JsonResponse({"error": "IntegrityError."}, status=417)
             except ValueError:

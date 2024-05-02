@@ -97,7 +97,8 @@ class Proveedor(Persona):
 class ProductoTypeChoices(models.TextChoices):
 	PRODUCTO = 1, "Producto"
 	CAUCHO = 2, "Caucho"
-	LUBRICANTE = 3, "Lubricante"
+	RIN = 3, "Rin"
+	LUBRICANTE = 4, "Lubricante"
 
 class Producto(models.Model):
 	nombre = models.CharField(max_length=50, blank=False, default="")
@@ -178,6 +179,9 @@ class Producto(models.Model):
 		
 		elif producto_type == ProductoTypeChoices.LUBRICANTE.value:
 			return Lubricante.objects.filter(id=self.id).first().serialize() if Lubricante.objects.filter(id=self.id).first() else []
+
+		elif producto_type == ProductoTypeChoices.RIN.value:
+			return Rin.objects.filter(id=self.id).first().serialize() if Rin.objects.filter(id=self.id).first() else []
 		
 		else:
 			return []
@@ -194,7 +198,7 @@ class Producto(models.Model):
 
 		proveedor = Proveedor.objects.get(rif=proveedor)
 
-		new_producto = cls(nombre=nombre, descripcion=descripcion, producto_type=1, proveedor=proveedor)
+		new_producto = cls(nombre=nombre, descripcion=descripcion, producto_type=ProductoTypeChoices.PRODUCTO, proveedor=proveedor)
 		new_producto.save()
 
 		new_producto.set_cantidad(cantidad)
@@ -218,8 +222,8 @@ class Caucho(Producto):
 	def create_caucho(cls, nombre, descripcion, cantidad, precio, producto_type, proveedor, detalles):
 		proveedor = Proveedor.objects.get(rif=proveedor)
 
-		new_producto = cls(nombre=nombre, descripcion=descripcion, producto_type=2, proveedor=proveedor,
-			marca=detalles.get('marca', ''), medidas=detalles.get('medidas', ''), calidad=detalles.get('calidad', '')
+		new_producto = cls(nombre=nombre, descripcion=descripcion, producto_type=ProductoTypeChoices.CAUCHO, proveedor=proveedor,
+			marca=detalles.get('marca', ''), medidas=detalles.get('medidas', ''), calidad=detalles.get('calidad', ''), fecha_fabricacion=detalles.get('fecha_fabricacion', '')
 		)
 		new_producto.save()
 
@@ -243,7 +247,7 @@ class Lubricante(Producto):
 	def create_lubricante(cls, nombre, descripcion, cantidad, precio, producto_type, proveedor, detalles):
 		proveedor = Proveedor.objects.get(rif=proveedor)
 
-		new_producto = cls(nombre=nombre, descripcion=descripcion, producto_type=3, proveedor=proveedor,
+		new_producto = cls(nombre=nombre, descripcion=descripcion, producto_type=ProductoTypeChoices.LUBRICANTE, proveedor=proveedor,
 			marca=detalles.get('marca', ''), vizcosidad=detalles.get('vizcosidad', ''), tipo=detalles.get('tipo', '')
 		)
 		new_producto.save()
@@ -258,6 +262,32 @@ class Lubricante(Producto):
 	
 	def __str__(self):
 		return f"Lubricante -> {self.id} - {self.nombre}"
+
+class Rin(Producto):
+	marca = models.CharField(max_length=50, blank=False, default="")
+	material = models.CharField(max_length=50, blank=False, default="")
+	tamano = models.CharField(max_length=50, blank=False, default="")
+	fecha_fabricacion = models.DateField(blank=True, null=True)
+
+	@classmethod
+	def create_rin(cls, nombre, descripcion, cantidad, precio, producto_type, proveedor, detalles):
+		proveedor = Proveedor.objects.get(rif=proveedor)
+
+		new_producto = cls(nombre=nombre, descripcion=descripcion, producto_type=ProductoTypeChoices.RIN, proveedor=proveedor,
+			marca=detalles.get('marca', ''), material=detalles.get('material', ''), tamano=detalles.get('tamano', ''), fecha_fabricacion=detalles.get('fecha_fabricacion', '')
+		)
+		new_producto.save()
+
+		new_producto.set_cantidad(cantidad)
+		new_producto.set_precio(precio)
+
+		return new_producto
+
+	def serialize(self):
+		return model_to_dict(self)
+	
+	def __str__(self):
+		return f"Caucho -> {self.id} - {self.nombre}"
 
 class Inventario(models.Model):
 	producto = models.ForeignKey(Producto, on_delete=models.CASCADE)

@@ -32,14 +32,14 @@ def usuarios(request):
     return render(request, "core/usuarios.html")
 
 @login_required
-def inventario(request):
+def productos(request):
     data = {
         'productos_total': len(Producto.objects.all()),
         'ventas_hoy': len(Venta.objects.filter(fecha=timezone.now().date())),
         'ventas_ayer': len(Venta.objects.filter(fecha=timezone.now().date()-timedelta(days=1))),
         'ventas_total': len(Venta.objects.all())
     }
-    return render(request, "core/inventario.html", data)
+    return render(request, "core/productos.html", data)
 
 @login_required
 def ventas(request):
