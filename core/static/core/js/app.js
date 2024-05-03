@@ -1728,7 +1728,6 @@ function fill_table(tipo) {
             $('#tabla_proveedores tbody tr').addClass('lg:w-1/4 md:w-1/3 sm:w-full');
         });
     } else if(tipo === 'productos') {
-
 		$("#tabla_productos thead").hide();
 
         table = $('#tabla_productos').DataTable({
@@ -1945,49 +1944,152 @@ function fill_table(tipo) {
 		});
 
     } else if(tipo === 'ventas') {
+        $("#tabla_ventas thead").hide();
         table = $('#tabla_ventas').DataTable({
 			'dom': 'Bfrtip',
-			'autoWidth': false,
-			'responsive': true,
-			'pageLength': 12,
-			'destroy': true,
-			'scrollY': '560px',
-			'scrollCollapse': true,
+			'buttons': [
+                {
+                    'name': 'btn_detalles_venta',
+                    'text': 'Detalles Venta',
+                    'attr':  {
+                        'id': 'btn_detalles_venta', 
+                        'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
+                        'disabled': true
+                    },
+                    'action':
+                        function(e) {
+                            venta_selected_id = document.querySelector('#venta_selected_id').value;
+
+                            if(!venta_selected_id) {
+                                alert('No ha seleccionado ninguna venta');
+                                return;
+                            }
+
+                            fetch('/api/ventas/' + venta_selected_id)
+                            .then(response => response.json())
+                            .then(venta => {
+                                const cliente = venta.cliente[0];
+								document.querySelector('#venta_detalles_nroVenta').value = venta.id;
+								document.querySelector('#venta_detalles_fecha').value = venta.fecha;
+								document.querySelector('#venta_detalles_total').value = venta.total;
+								document.querySelector('#venta_detalles_cedula').value = cliente.cedula;
+								document.querySelector('#venta_detalles_nombres').value = cliente.shortname;
+
+								const contenedor = document.getElementById('productos_informacion');
+								contenedor.innerHTML = '';
+								const productos = venta.productos[0];
+								var contador = 0;
+								productos.forEach((producto) => {
+
+									const titulo = document.createElement('h3');
+									titulo.textContent = 'Productos Asociados';
+									titulo.classList.add('servicios_titulo', 'text-lg', 'font-semibold', 'text-gray-600', 'dark:text-gray-300');
+									contenedor.appendChild(titulo);
+
+									const contenedor_labels = document.createElement('div')
+									contenedor_labels.classList.add('contenedor_labels')
+									contenedor.appendChild(contenedor_labels);
+
+									generar_div("Nombre", producto.nombre, contenedor_labels)
+									generar_div("Precio", producto.precio, contenedor_labels)
+									generar_div("Descripcion", producto.descripcion, contenedor_labels)
+									if (producto.extra.marca !== undefined) generar_div("Marca", producto.extra.marca, contenedor_labels);
+
+									generar_div("Cantidad Solicitada", venta.cantidad[0][venta.detalles[0][contador].id], contenedor_labels);
+									contador++;
+									
+									if(producto.extra.producto_type == 2){
+										generar_div("Medidas", producto.extra.medidas, contenedor_labels)
+										generar_div("Calidad", producto.extra.calidad, contenedor_labels)
+									}else if(producto.extra.producto_type == 3){
+										generar_div("Vizcocidad", producto.extra.vizcosidad, contenedor_labels)
+										generar_div("Tipo", producto.extra.tipo, contenedor_labels)
+									}
+
+								});
+                            })
+                            .catch(function(error) {
+                                bootstrapAlert('Ha ocurrido un error al buscar la venta', 'error');
+                            });
+
+                            modal('#detallesVentaModal', 'show');
+                        }
+                },
+            ],
+			'select': true,
+            'bInfo': false,
+            'pageLength': 8,
+            'destroy': true,
+            'lengthChange': false,
+            'deferRender': true,
 			'language': {'url': '/media/datatables-languages/es-ES_default.json'},
 			'ajax': {
 				'url': '/api/ventas',
 				'type': 'GET',
 				'dataSrc': '',
 				'error': function(jqXHR, ajaxOptions, thrownError) {
-					bootstrapAlert('Ha ocurrido un error al cargar inventario', 'danger');
-					console.log('Error buscar productos: ' + thrownError);
+					bootstrapAlert('Ha ocurrido un error al cargar las ventas', 'error');
 				 }
 			},
 			'columns': [
-				{'data': 'id'},
-				{'data': 'id'},
-				{'data': 'fecha'},
-				{'data': 'cliente.0.cedula'},
-				{'data': 'cliente.0.names'},
-				{'data': 'total'},
-				{'data': 'id'},
-			],
-			'columnDefs': [
-				{'class': 'd-none', 'orderable': false, 'targets': [0]},
-				{
-					'orderable': false,
-					'width': 110,
-					'render': function (data, type, row) {
-						return `
-							<button type='button' class='btn btn-primary btn-sm btn_venta_modal_detalles' data-toggle='tooltip' title='Información de la venta'><i class='fa fa-book'></i></button>
-							<!-- <button type='button' class='btn btn-success btn-sm btn_venta_modal_factura' data-toggle='tooltip' title='Generar Factura'><i class='fa fa-download'></i></button> -->
-							<button type='button' class='btn btn-info btn-sm btn_reporte_factura' data-toggle='tooltip' title='Ver Factura'><i class='fa fa-eye'></i></button>
-						`;
-					},
-					'targets': [-1]
-				},
-			],
+                {
+                    render: function (data, type, row, meta) {
+						console.log(row)
+
+						html = `
+                            <input type="hidden" name="venta_id" value="${row.id}">
+
+                            <div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
+                                <p class="mb-2 text-xl font-bold text-gray-300 dark:text-gray-300">
+                                    Nro de Venta:${row.id}
+                                </p>
+                                <p class="text-lg text-gray-200 dark:text-gray-200">
+                                    ${row.fecha}
+                                </p>
+                                <p class="text-lg text-gray-200 dark:text-gray-200">
+                                    ${row.cliente[0].shortname}
+                                </p>
+								<p class="text-lg text-gray-200 dark:text-gray-200">
+									${row.cliente[0].cedula}
+								</p>
+								<p class="text-lg text-gray-200 dark:text-gray-200">
+                                    Total: ${row.total}
+                                </p>
+                            </div>
+                        `;
+                        
+
+                        return html;
+                    }
+                },
+            ],
 		});
+
+		$('#tabla_ventas tbody').off('click', 'tr').on('click', 'tr', function () {
+            const venta_selected = document.querySelector('#venta_selected_id');
+            const current_venta = this.querySelector('input[name="venta_id"]') ? this.querySelector('input[name="venta_id"]').value : '';
+
+
+            if ($(this).hasClass('selected')) {
+                $(this).removeClass('selected');
+                venta_selected.value = '';
+            } else {
+                table.$('tr.selected').removeClass('selected');
+                $(this).addClass('selected');
+                venta_selected.value = current_venta;
+            }
+
+            btn_disabled_value = (venta_selected.value == '');
+    
+            table.button('btn_detalles_venta:name').nodes().attr('disabled', btn_disabled_value);
+            table.button('btn_modificar_venta:name').nodes().attr('disabled', btn_disabled_value);
+            table.button('btn_toggle_venta:name').nodes().attr('disabled', btn_disabled_value);
+        });
+
+        table.on('draw', function(data) {
+            $('#tabla_ventas tbody').addClass('flex flex-wrap');
+            $('#tabla_ventas tbody tr').addClass('lg:w-1/4 md:w-1/3 sm:w-full');
+        });
     } else if(tipo === 'transacciones') {
         table = $('#tabla_transacciones').DataTable({
 			'dom': 'Bfrtip',

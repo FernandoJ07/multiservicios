@@ -47,7 +47,7 @@ def ventas(request):
 
 @login_required
 def registroVentas(request):
-    return render(request, "core/registro_ventas.html")
+    return render(request, "core/registro-ventas.html")
 
 @login_required
 def transacciones(request):
@@ -67,7 +67,7 @@ def servicios(request):
 
 @login_required
 def registroServicios(request):
-    return render(request, "core/registro_servicios.html")
+    return render(request, "core/registro-servicios.html")
 
 @login_required
 def servicioFacturado(request):
