@@ -206,7 +206,7 @@
                             </label>
                         </div>
     
-                        <div class="py-2">
+                        <div class="py-2 mt-1">
                             <button class="px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
                                 Registrar
                             </button>
@@ -232,7 +232,15 @@
                     <form id="form_producto_modificar">
                         <label class="block text-sm">
                             <span class="text-gray-700 dark:text-gray-400">Nombre de producto</span>
-                            <input id="producto_modificar_nombre" name="nombre" class="block w-full mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input">
+
+                            <div class="relative text-gray-500 focus-within:text-purple-600 dark:focus-within:text-purple-400">
+                                <input id="producto_modificar_nombre" name="nombre" class="block w-full pl-10 mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input">
+                                <div class="absolute inset-y-0 flex items-center ml-3 pointer-events-none">
+                                    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                                    </svg>
+                                </div>
+                            </div>
                         </label>
     
                         <label class="block mt-4 text-sm">
@@ -242,7 +250,14 @@
                         
                         <label class="block mt-4 text-sm">
                             <span class="text-gray-700 dark:text-gray-400">Precio de producto</span>
-                            <input id="producto_modificar_precio" name="precio" type="number" class="block w-full mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input">
+                            <div class="relative text-gray-500 focus-within:text-purple-600 dark:focus-within:text-purple-400">
+                                <input id="producto_modificar_precio" name="precio" type="number" class="block w-full pl-10 mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input">
+                                <div class="absolute inset-y-0 flex items-center ml-3 pointer-events-none">
+                                    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                                    </svg>
+                                </div>
+                            </div>
                         </label>
 
                         <input id="producto_modificar_tipo" name="producto_type" type="hidden">
@@ -250,12 +265,26 @@
                         <div id="container_producto_modificar_caucho" style="display: none;">
                             <label class="block mt-4 text-sm">
                                 <span class="text-gray-700 dark:text-gray-400">Marca</span>
-                                <input id="producto_modificar_caucho_marca" name="caucho_marca" class="block w-full mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input">
+                                <div class="relative text-gray-500 focus-within:text-purple-600 dark:focus-within:text-purple-400">
+                                    <input id="producto_modificar_caucho_marca" name="caucho_marca" class="block w-full pl-10 mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input">
+                                    <div class="absolute inset-y-0 flex items-center ml-3 pointer-events-none">
+                                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
                             </label>
 
                             <label class="block mt-4 text-sm">
                                 <span class="text-gray-700 dark:text-gray-400">Medidas</span>
-                                <input id="producto_modificar_caucho_medidas" name="caucho_medidas" class="block w-full mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input">
+                                <div class="relative text-gray-500 focus-within:text-purple-600 dark:focus-within:text-purple-400">
+                                    <input id="producto_modificar_caucho_medidas" name="caucho_medidas" class="block w-full pl-10 mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input">
+                                    <div class="absolute inset-y-0 flex items-center ml-3 pointer-events-none">
+                                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
                             </label>
 
                             <label class="block mt-4 text-sm">
@@ -269,33 +298,68 @@
 
                             <label class="block mt-4 text-sm">
                                 <span class="text-gray-700 dark:text-gray-400">Fecha de fabricación</span>
-                                <input id="producto_modificar_caucho_fabricacion" name="caucho_fabricacion" type="date" class="block w-full mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input">
+                                <div class="relative text-gray-500 focus-within:text-purple-600 dark:focus-within:text-purple-400">
+                                    <input id="producto_modificar_caucho_fabricacion" name="caucho_fabricacion" type="date" class="block w-full pl-10 mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input">
+                                    <div class="absolute inset-y-0 flex items-center ml-3 pointer-events-none">
+                                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
                             </label>
                         </div>
 
                         <div id="container_producto_modificar_rin" style="display: none;">
                             <label class="block mt-4 text-sm">
                                 <span class="text-gray-700 dark:text-gray-400">Marca</span>
-                                <input id="producto_modificar_rin_marca" name="rin_marca" class="block w-full mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input">
+                                <div class="relative text-gray-500 focus-within:text-purple-600 dark:focus-within:text-purple-400">
+                                    <input id="producto_modificar_rin_marca" name="rin_marca" class="block w-full pl-10 mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input">
+                                    <div class="absolute inset-y-0 flex items-center ml-3 pointer-events-none">
+                                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
                             </label>
 
                             <label class="block mt-4 text-sm">
                                 <span class="text-gray-700 dark:text-gray-400">Material</span>
-                                <input id="producto_modificar_rin_material" name="rin_material" class="block w-full mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input">
+                                <div class="relative text-gray-500 focus-within:text-purple-600 dark:focus-within:text-purple-400">
+                                    <input id="producto_modificar_rin_material" name="rin_material" class="block w-full pl-10 mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input">
+                                    <div class="absolute inset-y-0 flex items-center ml-3 pointer-events-none">
+                                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
                             </label>
 
                             <label class="block mt-4 text-sm">
                                 <span class="text-gray-700 dark:text-gray-400">Tamaño</span>
-                                <input id="producto_modificar_rin_tamano" name="rin_tamano" class="block w-full mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input">
+                                <div class="relative text-gray-500 focus-within:text-purple-600 dark:focus-within:text-purple-400">
+                                    <input id="producto_modificar_rin_tamano" name="rin_tamano" class="block w-full pl-10 mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input">
+                                    <div class="absolute inset-y-0 flex items-center ml-3 pointer-events-none">
+                                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
                             </label>
 
                             <label class="block mt-4 text-sm">
                                 <span class="text-gray-700 dark:text-gray-400">Fecha de fabricación</span>
-                                <input id="producto_modificar_rin_fabricacion" name="rin_fabricacion" type="date" class="block w-full mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input">
+                                <div class="relative text-gray-500 focus-within:text-purple-600 dark:focus-within:text-purple-400">
+                                    <input id="producto_modificar_rin_fabricacion" name="rin_fabricacion" type="date" class="block w-full pl-10 mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input">
+                                    <div class="absolute inset-y-0 flex items-center ml-3 pointer-events-none">
+                                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
                             </label>
                         </div>
     
-                        <div class="py-2">
+                        <div class="py-2 mt-1">
                             <button class="px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
                                 Guardar
                             </button>
