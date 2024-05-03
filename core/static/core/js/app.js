@@ -711,14 +711,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	if(window.location.pathname.split('/')[1] === 'ventas') {
 
-		// Modal generar venta
-		$('#tabla_ventas tbody').off('click', '.btn_venta_modal_factura');
-		$('#tabla_ventas tbody').on('click', '.btn_venta_modal_factura', function () {
-			row = $(this).parents('tr')[0];
-			venta_id = row.cells[0].innerHTML;
-			$('#generar_factura_id').val(venta_id)
-			$('#generarFacturaModal').modal('show');
-		});
 
 		// Generar venta
 		$('#btn_generar_factura').on('click', function() {
@@ -783,65 +775,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		});
 
-		// Modal detalles venta
-		$('#tabla_ventas tbody').off('click', '.btn_venta_modal_detalles');
-		$('#tabla_ventas tbody').on('click', '.btn_venta_modal_detalles', function () {
-			row = $(this).parents('tr')[0];
-			venta_id = row.cells[0].innerHTML;
-
-			if(venta_id) {
-				fetch('/api/ventas/' + venta_id)
-				.then(response => response.json())
-				.then(venta => {
-					const cliente = venta.cliente[0];
-					document.querySelector('#venta_detalles_nroVenta').value = venta.id;
-					document.querySelector('#venta_detalles_fecha').value = venta.fecha;
-					document.querySelector('#venta_detalles_total').value = venta.total;
-					document.querySelector('#cliente_detalles_cedula').value = cliente.cedula;
-					document.querySelector('#cliente_detalles_num_tlf').value = cliente.num_tlf;
-					document.querySelector('#cliente_detalles_nombres').value = cliente.names;
-
-					const contenedor = document.getElementById('productos_informacion');
-					contenedor.innerHTML = '';
-					const productos = venta.productos[0];
-					var contador = 0;
-					productos.forEach((producto) => {
-
-						const titulo = document.createElement('h3');
-						titulo.textContent = producto.nombre;
-						const div_titulo = document.createElement('div');
-						div_titulo.classList.add('col-md-12', 'mb-3');
-						div_titulo.appendChild(titulo);
-						contenedor.appendChild(div_titulo);
-
-						generar_div("Nombre", producto.nombre, contenedor)
-						generar_div("Precio", producto.precio, contenedor)
-						generar_div("Descripcion", producto.descripcion, contenedor)
-						if (producto.extra.marca !== undefined) generar_div("Marca", producto.extra.marca, contenedor);
-
-						generar_div("Cantidad Solicitada", venta.cantidad[0][venta.detalles[0][contador].id], contenedor);
-						contador++;
-						
-						if(producto.extra.producto_type == 2){
-							generar_div("Medidas", producto.extra.medidas, contenedor)
-							generar_div("Calidad", producto.extra.calidad, contenedor)
-						}else if(producto.extra.producto_type == 3){
-							generar_div("Vizcocidad", producto.extra.vizcosidad, contenedor)
-							generar_div("Tipo", producto.extra.tipo, contenedor)
-						}
-
-					});
-				})
-				.catch(function(error) {
-					bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'error');
-					console.log('Error buscar cliente: ' + error);
-				});
-
-				$('#detallesVentaModal').modal('show');
-			} else {
-				bootstrapAlert('No se ha seleccionado ningún cliente', 'info');
-			}
-		});
 
         fill_table('ventas');
 	}
@@ -1042,49 +975,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         fill_table('servicio-facturado');
 
-		// Modal detalles venta
-		$('#tabla_servicios_facturados tbody').off('click', '.btn_servicioFacturado_modal_detalles');
-		$('#tabla_servicios_facturados tbody').on('click', '.btn_servicioFacturado_modal_detalles', function () {
-			row = $(this).parents('tr')[0];
-			servicio_id = row.cells[0].innerHTML;
-
-			if(servicio_id) {
-				fetch('/api/servicio-facturado/' + servicio_id)
-				.then(response => response.json())
-				.then(servicioFacturado => {
-					document.querySelector('#servicio_detalles_cedula').value = servicioFacturado.cliente.cedula;
-					document.querySelector('#servicio_detalles_nombres').value = servicioFacturado.cliente.names;
-					document.querySelector('#servicio_detalles_num_tlfn').value = servicioFacturado.cliente.num_tlf;
-					document.querySelector('#servicio_detalles_monto').value = servicioFacturado.precio;
-
-					const contenedor = document.getElementById('servicios_informacion');
-					contenedor.innerHTML = '';
-					const serviciosFacturado = servicioFacturado.servicios;
-					serviciosFacturado.forEach((servicioFacturado) => {
-
-						const titulo = document.createElement('h3');
-						titulo.textContent = servicioFacturado.nombre;
-						const div_titulo = document.createElement('div');
-						div_titulo.classList.add('col-md-12', 'mb-3');
-						div_titulo.appendChild(titulo);
-						contenedor.appendChild(div_titulo);
-
-						generar_div("Código", servicioFacturado.codigo, contenedor)
-						generar_div("Nombre", servicioFacturado.nombre, contenedor)
-						generar_div("Precio", servicioFacturado.precio, contenedor)
-
-					});
-				})
-				.catch(function(error) {
-					bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'error');
-					console.log('Error buscar cliente: ' + error);
-				});
-
-				$('#detallesServicioModal').modal('show');
-			} else {
-				bootstrapAlert('No se ha seleccionado ningún cliente', 'info');
-			}
-		});
+		
 
 		// Modal generar Factura
 		$('#tabla_servicios_facturados tbody').off('click', '.btn_venta_modal_factura');
@@ -2034,7 +1925,6 @@ function fill_table(tipo) {
 			'columns': [
                 {
                     render: function (data, type, row, meta) {
-						console.log(row)
 
 						html = `
                             <input type="hidden" name="venta_id" value="${row.id}">
@@ -2091,14 +1981,15 @@ function fill_table(tipo) {
             $('#tabla_ventas tbody tr').addClass('lg:w-1/4 md:w-1/3 sm:w-full');
         });
     } else if(tipo === 'transacciones') {
+		$("#tabla_transacciones thead").hide();
         table = $('#tabla_transacciones').DataTable({
 			'dom': 'Bfrtip',
-			'autoWidth': false,
-			'responsive': true,
-			'pageLength': 12,
-			'destroy': true,
-			'scrollY': '560px',
-			'scrollCollapse': true,
+			'select': true,
+            'bInfo': false,
+            'pageLength': 8,
+            'destroy': true,
+            'lengthChange': false,
+            'deferRender': true,
 			'language': {'url': '/media/datatables-languages/es-ES_default.json'},
 			'ajax': {
 				'url': '/api/transacciones',
@@ -2110,16 +2001,41 @@ function fill_table(tipo) {
 				 }
 			},
 			'columns': [
-				{'data': 'id'},
-				{'data': 'accion'},
-				{'data': 'producto.0.nombre'},
-				{'data': 'cliente'},
-				{'data': 'usuario'},
-				{'data': 'cantidad'},
-				{'data': 'monto'},
-			],
-			
+                {
+                    render: function (data, type, row, meta) {
+
+						html = `
+                            <input type="hidden" name="transaccion_id" value="${row.id}">
+
+                            <div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
+								<p class="mb-2 text-xl font-bold text-gray-300 dark:text-gray-300">
+									Id: ${row.id}
+								</p>
+								<p class="text-lg text-gray-200 dark:text-gray-200">
+									Acción: ${row.accion}
+								</p>
+								<p class="text-lg text-gray-200 dark:text-gray-200">
+									Producto: ${row.producto[0].nombre}
+								</p>
+								<p class="text-lg text-gray-200 dark:text-gray-200">
+									Cliente: ${row.cliente[0]}
+								</p>
+								<p class="text-lg text-gray-200 dark:text-gray-200">
+									Usuario: ${row.usuario[0]}
+								</p>
+								<p class="text-lg text-gray-200 dark:text-gray-200">
+									Cantidad: ${row.cantidad}
+								</p>
+                            </div>
+                        `;
+                        
+                        return html;
+                    }
+                },
+            ],
 		});
+
+		
     }else if(tipo === 'servicios') {
         $("#tabla_servicios thead").hide();
         table = $('#tabla_servicios').DataTable({
