@@ -524,6 +524,107 @@ document.addEventListener('DOMContentLoaded', function() {
 			e.preventDefault();
 		});
 
+		// Sumar cantidad producto
+		$('#producto_cantidad_sumar').on('click', function() {
+			const productos_selected_id = document.querySelector('#productos_selected_id').value;
+			const productos_cantidad_valor = document.querySelector('#producto_cantidad_valor').value;
+
+			const data = {
+				producto_id: productos_selected_id,
+				cantidad: productos_cantidad_valor
+			}
+
+			fetch('/api/productos/' + productos_selected_id + '/add', {
+		    	method: 'PATCH',
+		    	body: JSON.stringify(data)
+		   	})
+
+			.then(response => response.json())
+			.then(result => {
+				if(!result.error) {
+					bootstrapAlert('Cantidad de producto sumada con éxito', 'success');
+
+					modal('#cantidadProductoModal', 'hide');
+					document.querySelector('#producto_cantidad_valor').value = 0;
+
+					setTimeout(() => {
+						fill_table('productos');
+					}, 100);
+				} else if(result.error == 'No permission.') {
+					modal('#cantidadProductoModal', 'hide');
+					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de Proveedors', 'error');
+
+				} else if(result.error == 'DoesNotExist.') {
+					modal('#cantidadProductoModal', 'hide');
+					bootstrapAlert('Proveedor no está registrado', 'error');
+
+				} else if(result.error == 'CedulaNotUnique.') {
+					bootstrapAlert('Ya existe Proveedor registrado con esta cédula de identidad', 'error');
+
+				} else if(result.error == 'ValueError.') {
+					bootstrapAlert('Ingrese todos los campos correctamente', 'error');
+
+				} else {
+					bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!');
+				}
+			})
+			.catch(function(error) {
+				bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!', 'error');
+				console.log('Error: ' + error);
+			});
+		});
+
+		// Restar cantidad producto
+		$('#producto_cantidad_restar').on('click', function() {
+			const productos_selected_id = document.querySelector('#productos_selected_id').value;
+			const productos_cantidad_valor = document.querySelector('#producto_cantidad_valor').value;
+
+			const data = {
+				producto_id: productos_selected_id,
+				cantidad: productos_cantidad_valor
+			}
+
+			fetch('/api/productos/' + productos_selected_id + '/remove', {
+		    	method: 'PATCH',
+		    	body: JSON.stringify(data)
+		   	})
+
+			.then(response => response.json())
+			.then(result => {
+				if(!result.error) {
+					bootstrapAlert('Cantidad de producto restada con éxito', 'success');
+
+					modal('#cantidadProductoModal', 'hide');
+					document.querySelector('#producto_cantidad_valor').value = 0;
+
+					setTimeout(() => {
+						fill_table('productos');
+					}, 100);
+				} else if(result.error == 'No permission.') {
+					modal('#cantidadProductoModal', 'hide');
+					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de Proveedors', 'error');
+
+				} else if(result.error == 'DoesNotExist.') {
+					modal('#cantidadProductoModal', 'hide');
+					bootstrapAlert('Proveedor no está registrado', 'error');
+
+				} else if(result.error == 'CedulaNotUnique.') {
+					bootstrapAlert('Ya existe Proveedor registrado con esta cédula de identidad', 'error');
+
+				} else if(result.error == 'ValueError.') {
+					bootstrapAlert('Ingrese todos los campos correctamente', 'error');
+
+				} else {
+					bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!');
+				}
+			})
+			.catch(function(error) {
+				bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!', 'error');
+				console.log('Error: ' + error);
+			});
+		});
+		
+
 		fill_table('productos');
 	}
 
@@ -1753,6 +1854,26 @@ function fill_table(tipo) {
 						function(e) {
 							alert('asd');
 						}
+				},
+				{
+					'name': 'btn_cantidad_producto',
+					'text': 'Sumar/Restar cantidad',
+					'attr':  {
+						'id': 'btn_cantidad_producto', 
+						'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
+						'disabled': true
+					},
+					'action':
+						function(e) {
+							productos_selected_id = document.querySelector('#productos_selected_id').value;
+
+							if(!productos_selected_id) {
+								alert('No hay producto seleccionado');
+								return;
+							}
+
+							modal('#cantidadProductoModal', 'show');
+						}
 				}
 			],
 			'select': true,
@@ -1814,6 +1935,7 @@ function fill_table(tipo) {
 			table.button('btn_detalles_producto:name').nodes().attr('disabled', btn_disabled_value);
 			table.button('btn_modificar_producto:name').nodes().attr('disabled', btn_disabled_value);
 			table.button('btn_toggle_producto:name').nodes().attr('disabled', btn_disabled_value);
+			table.button('btn_cantidad_producto:name').nodes().attr('disabled', btn_disabled_value);
 		});
 
 		table.on('draw', function(data) {
