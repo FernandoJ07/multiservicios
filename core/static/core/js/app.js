@@ -616,6 +616,42 @@ document.addEventListener('DOMContentLoaded', function() {
 				console.log('Error: ' + error);
 			});
 		});
+
+		// Eliminar producto
+		$('#btn_producto_eliminar').on('click', function() {
+			productos_selected_id = document.querySelector('#productos_selected_id').value;
+
+			fetch('/api/productos/' + productos_selected_id, {
+		    	method: 'DELETE',
+		    	body: JSON.stringify({})
+		   	})
+		    .then(response => response.json())
+		    .then(result => {
+		    	if(!result.error) {
+					modal('#eliminarProductoModal', 'hide');
+		    		bootstrapAlert('Información del producto eliminada satisfactoriamente.', 'success');
+
+		    		setTimeout(() => {
+						fill_table('productos');
+					}, 100);
+		    	} else if(result.error == 'DoesNotExist.') {
+					modal('#eliminarProductoModal', 'hide');
+		    		bootstrapAlert('El producto no se encuentra registrado en el sistema.', 'error');
+
+		    	}
+		    	else if(result.error == 'No permission.') {
+					modal('#eliminarProductoModal', 'hide');
+		    		bootstrapAlert('Los privilegios de tu cuenta no permiten eliminar la información de los productos.', 'error');
+
+		    	} else {
+		    		bootstrapAlert('Se ha producido un fallo al eliminar la información del producto.');
+		    	}
+		    })
+		    .catch(function(error) {
+		    	bootstrapAlert('Se ha producido un fallo al eliminar la información del producto.', 'error');
+		    	console.log('Error: ' + error);
+		    });
+		});
 		
 
 		fill_table('productos');
@@ -1733,7 +1769,7 @@ function fill_table(tipo) {
 					},
 					'action':
 						function(e) {
-							alert('asd');
+							modal('#eliminarProductoModal', 'show');
 						}
 				},
 				{
