@@ -857,7 +857,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 
 		// Eliminar servicio
-		$('#btn_usuario_eliminar').on('click', function() {
+		$('#btn_servicio_eliminar').on('click', function() {
 			servicios_selected_id = document.querySelector('#servicios_selected_id').value;
 
 			fetch('/api/servicios/' + servicios_selected_id, {
