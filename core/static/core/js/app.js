@@ -793,7 +793,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Agregar servicio
 		$('#form_servicio_agregar').submit(function(e) {
-
 			const form_agregar_data = $('#form_servicio_agregar').serializeArray().reduce(function(obj, item) {obj[item.name] = item.value;return obj;}, {});
 
 			fetch('/api/servicios/', {
@@ -803,7 +802,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		    .then(response => response.json())
 		    .then(result => {
 				if(!result.error) {
-					bootstrapAlert(result.message, 'success');
+					bootstrapAlert('Registro del servicio realizado satisfactoriamente.', 'success');
 					modal('#agregarServicioModal', 'hide');
 		    		this.reset();
 
@@ -813,11 +812,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				}
 				else {
-					bootstrapAlert('Error al registrar el servicio!', 'danger');
+					bootstrapAlert('Se ha producido un fallo al registrar la información del servicio.', 'error');
 				}
 		    })
 		    .catch(function(error) {
-				bootstrapAlert('Error en la conexión o respuesta del servidor.', 'danger');
+				bootstrapAlert('Se ha producido un fallo al registrar la información del servicio.', 'error');
 		    });
 
 			e.preventDefault();
@@ -835,7 +834,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		    .then(response => response.json())
 		    .then(result => {
 		    	if(!result.error) {
-		    		bootstrapAlert('Servicio modificado con éxito', 'success');
+		    		bootstrapAlert('Actualización de la información del servicio realizada satifastoriamente.', 'success');
 		    		modal('#modificarServicioModal', 'hide');
 		    		this.reset();
 
@@ -843,19 +842,18 @@ document.addEventListener('DOMContentLoaded', function() {
 		    			fill_table('servicios');
 		    		}, 100);
 		    	} else if(result.error == 'DoesNotExist.') {
-		    		bootstrapAlert('Servicio no está registrado', 'warning');
+		    		bootstrapAlert('El servicio no se encuentra registrado en el sistema.', 'error');
 		    	} else if(result.error == 'ValueError.') {
-		    		bootstrapAlert('Ingrese todos los campos correctamente', 'warning');
+		    		bootstrapAlert('Asegúrese de completar todos los campos de forma adecuada.', 'error');
 		    	} else {
-		    		bootstrapAlert('Ha ocurrido un error al modificar la información del servicio!', 'warning');
+		    		bootstrapAlert('Se ha producido un fallo al actualizar la información del servicio.');
 		    	}
 		    })
 		    .catch(function(error) {
-		    	bootstrapAlert('Ha ocurrido un error al modificar la información del servicio!', 'warning');
+		    	bootstrapAlert('Se ha producido un fallo al actualizar la información del servicio.');
 		    });
 
 			e.preventDefault();
-
 		});
 
 		// Eliminar servicio
@@ -870,29 +868,26 @@ document.addEventListener('DOMContentLoaded', function() {
 		    .then(result => {
 		    	if(!result.error) {
 					modal('#eliminarServicioModal', 'hide');
+		    		bootstrapAlert('Información del servicio eliminada satisfactoriamente.', 'success');
 
-		    		bootstrapAlert('Servicio eliminado correctamente', 'success');
 		    		setTimeout(() => {
 						fill_table('servicios');
 					}, 100);
 
 		    	} else if(result.error == 'DoesNotExist.') {
 		    		modal('#eliminarServicioModal', 'hide');
-		    		bootstrapAlert('Servicio no está registrado', 'warning');
+		    		bootstrapAlert('El servicio no se encuentra registrado en el sistema.', 'error');
 		    	}else if(result.error == 'No permission.') {
 					modal('#eliminarServicioModal', 'hide');
-					bootstrapAlert('Tu cuenta no tiene permisos para eliminar servicios', 'info');
+					bootstrapAlert('Los privilegios de tu cuenta no permiten eliminar la información de los servicios.', 'error');
 				}else {
-		    		bootstrapAlert('Ha ocurrido un error al eliminar servicio', 'error');
+		    		bootstrapAlert('Se ha producido un fallo al eliminar la información del servicio.');
 		    	}
 		    })
 		    .catch(function(error) {
-		    	bootstrapAlert('Ha ocurrido un error al eliminar servicio', 'error');
+		    	bootstrapAlert('Se ha producido un fallo al eliminar la información del servicio.');
 		    });
 		});
-
-		
-
 	}
 
 	if(window.location.pathname.split('/')[1] === 'registro-servicios') {
@@ -2049,7 +2044,7 @@ function fill_table(tipo) {
                             servicios_selected_id = document.querySelector('#servicios_selected_id').value;
 
                             if(!servicios_selected_id) {
-                                alert('No hay servicios seleccionado');
+                                bootstrapAlert('Debe seleccionar un servicio.', 'warning');
                                 return;
                             }
 
@@ -2061,7 +2056,7 @@ function fill_table(tipo) {
                                 document.querySelector('#servicio_detalles_precio').value = servicio.precio;
                             })
                             .catch(function(error) {
-                                bootstrapAlert('Ha ocurrido un error al buscar el servicio', 'error');
+                                bootstrapAlert('Se ha producido un fallo buscando la información del servicio.', 'error');
                                 console.log('Error buscar servicio: ' + error);
                             });
 
@@ -2070,7 +2065,7 @@ function fill_table(tipo) {
                 },
                 {
                     'name': 'btn_modificar_servicio',
-                    'text': 'Modificar',
+                    'text': 'Editar',
                     'attr':  {
                         'id': 'btn_modificar_servicio', 
                         'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
@@ -2081,7 +2076,7 @@ function fill_table(tipo) {
                             servicios_selected_id = document.querySelector('#servicios_selected_id').value;
 
                             if(!servicios_selected_id) {
-                                alert('No hay servicio seleccionado');
+                                bootstrapAlert('Debe seleccionar un servicio.', 'warning');
                                 return;
                             }
 
@@ -2093,7 +2088,7 @@ function fill_table(tipo) {
                                 document.querySelector('#servicio_modificar_precio').value = servicio.precio;
                             })
                             .catch(function(error) {
-                                bootstrapAlert('Ha ocurrido un error al buscar el servicio', 'error');
+                                bootstrapAlert('Se ha producido un fallo buscando la información del servicio.', 'error');
                                 console.log('Error buscar servicio: ' + error);
                             });
 
@@ -2126,7 +2121,7 @@ function fill_table(tipo) {
 				'type': 'GET',
 				'dataSrc': '',
 				'error': function(jqXHR, ajaxOptions, thrownError) {
-					bootstrapAlert('Ha ocurrido un error al cargar los servicios', 'error');
+					bootstrapAlert('Se ha producido un fallo buscando la información de servicios.', 'error');
 					console.log('Error buscar servicios: ' + thrownError);
 				 }
 			},
