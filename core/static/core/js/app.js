@@ -21,33 +21,34 @@ document.addEventListener('DOMContentLoaded', function() {
 		    .then(result => {
 				console.log(result)
 		    	if(!result.error) {
-		    		bootstrapAlert('Cliente registrado con éxito', 'success');
+		    		bootstrapAlert('Registro del cliente realizado satisfactoriamente.', 'success');
 					modal('#agregarClienteModal', 'hide');
 		    		this.reset();
 
 		    		setTimeout(() => {
 		    			fill_table('clientes');
 		    		}, 100);
+
 				} else if(result.error == 'No permission.') {
 					modal('#agregarClienteModal', 'hide');
-					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de clientes', 'error');
+					bootstrapAlert('Los privilegios de tu cuenta no permiten realizar registros de clientes.', 'error');
 
 		    	} else if(result.error == 'DoesNotExist.') {
 					modal('#agregarClienteModal', 'hide');
-		    		bootstrapAlert('Cliente no está registrado', 'error');
+		    		bootstrapAlert('El cliente no se encuentra registrado en el sistema.', 'error');
 
 		    	} else if(result.error == 'CedulaNotUnique.') {
-		    		bootstrapAlert('Ya existe cliente registrado con esta cédula de identidad', 'error');
+		    		bootstrapAlert('Hay un cliente registrado con este número de cédula de identidad.', 'error');
 					
 		    	} else if(result.error == 'ValueError.') {
-		    		bootstrapAlert('Ingrese todos los campos correctamente', 'error');
+		    		bootstrapAlert('Asegúrese de completar todos los campos de forma adecuada.', 'error');
 
 		    	} else {
-		    		bootstrapAlert('Ha ocurrido un error al modificar la información del cliente!');
+		    		bootstrapAlert('Se ha producido un fallo al registrar la información del cliente.', 'error');
 		    	}
 		    })
 		    .catch(function(error) {
-		    	bootstrapAlert('Ha ocurrido un error al modificar la información del cliente!', 'error');
+		    	bootstrapAlert('Se ha producido un fallo al registrar la información del cliente.', 'error');
 		    	console.log('Error: ' + error);
 		    });
 
@@ -66,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		    .then(response => response.json())
 		    .then(result => {
 		    	if(!result.error) {
-		    		bootstrapAlert('Cliente modificado con éxito', 'success');
+		    		bootstrapAlert('Actualización de la información del cliente realizada satifastoriamente.', 'success');
 		    		modal('#modificarClienteModal', 'hide');
 		    		this.reset();
 
@@ -75,20 +76,23 @@ document.addEventListener('DOMContentLoaded', function() {
 		    		}, 100);
 				} else if(result.error == 'No permission.') {
 					modal('#modificarClienteModal', 'hide');
-					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de clientes', 'error');
+					bootstrapAlert('Los privilegios de tu cuenta no permiten realizar cambios en la información de los clientes.', 'error');
+
 		    	} else if(result.error == 'DoesNotExist.') {
 		    		modal('#modificarClienteModal', 'hide');
-		    		bootstrapAlert('Cliente no está registrado', 'error');
+		    		bootstrapAlert('El cliente no se encuentra registrado en el sistema.', 'error');
+
 		    	} else if(result.error == 'CedulaNotUnique.') {
-		    		bootstrapAlert('Ya existe cliente registrado con esta cédula de identidad', 'error');
+		    		bootstrapAlert('Hay un cliente registrado con este número de cédula de identidad.', 'error');
+
 		    	} else if(result.error == 'ValueError.') {
-		    		bootstrapAlert('Ingrese todos los campos correctamente', 'error');
+		    		bootstrapAlert('Asegúrese de completar todos los campos de forma adecuada.', 'error');
 		    	} else {
-		    		bootstrapAlert('Ha ocurrido un error al modificar la información del cliente!');
+		    		bootstrapAlert('Se ha producido un fallo al actualizar la información del cliente.');
 		    	}
 		    })
 		    .catch(function(error) {
-		    	bootstrapAlert('Ha ocurrido un error al modificar la información del cliente!', 'error');
+		    	bootstrapAlert('Se ha producido un fallo al actualizar la información del cliente.', 'error');
 		    	console.log('Error: ' + error);
 		    });
 
@@ -107,24 +111,26 @@ document.addEventListener('DOMContentLoaded', function() {
 		    .then(result => {
 		    	if(!result.error) {
 					modal('#eliminarClienteModal', 'hide');
-		    		bootstrapAlert('Cliente eliminado correctamente', 'success');
+		    		bootstrapAlert('Información del cliente eliminada satisfactoriamente.', 'success');
 
 		    		setTimeout(() => {
 						fill_table('clientes');
 					}, 100);
 		    	} else if(result.error == 'DoesNotExist.') {
 					modal('#eliminarClienteModal', 'hide');
-		    		bootstrapAlert('Cliente no está registrado', 'error');
+		    		bootstrapAlert('El cliente no se encuentra registrado en el sistema.', 'error');
+
 		    	}
 		    	else if(result.error == 'No permission.') {
 					modal('#eliminarClienteModal', 'hide');
-		    		bootstrapAlert('Tu cuenta no tiene permisos para eliminar clientes', 'error');
+		    		bootstrapAlert('Los privilegios de tu cuenta no permiten eliminar la información de los clientes.', 'error');
+
 		    	} else {
-		    		bootstrapAlert('Ha ocurrido un error al eliminar cliente');
+		    		bootstrapAlert('Se ha producido un fallo al eliminar la información del cliente.');
 		    	}
 		    })
 		    .catch(function(error) {
-		    	bootstrapAlert('Ha ocurrido un error al eliminar cliente', 'error');
+		    	bootstrapAlert('Se ha producido un fallo al eliminar la información del cliente.', 'error');
 		    	console.log('Error: ' + error);
 		    });
 		});
@@ -1140,7 +1146,7 @@ function fill_table(tipo) {
 							clientes_selected_id = document.querySelector('#clientes_selected_id').value;
 
 							if(!clientes_selected_id) {
-								alert('No hay cliente seleccionado');
+								bootstrapAlert('Debe seleccionar un cliente.', 'warning');
 								return;
 							}
 
@@ -1154,7 +1160,7 @@ function fill_table(tipo) {
 								document.querySelector('#cliente_detalles_direccion').value = cliente.direccion;
 							})
 							.catch(function(error) {
-								//toastr.error('Ha ocurrido un error al buscar el cliente');
+								bootstrapAlert('Se ha producido un fallo buscando la información del cliente.', 'error');
 								console.log('Error buscar cliente: ' + error);
 							});
 
@@ -1163,7 +1169,7 @@ function fill_table(tipo) {
 				},
 				{
 					'name': 'btn_modificar_cliente',
-					'text': 'Modificar',
+					'text': 'Editar',
 					'attr':  {
 						'id': 'btn_modificar_cliente', 
 						'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
@@ -1174,7 +1180,7 @@ function fill_table(tipo) {
 							clientes_selected_id = document.querySelector('#clientes_selected_id').value;
 
 							if(!clientes_selected_id) {
-								alert('No hay cliente seleccionado');
+								bootstrapAlert('Debe seleccionar un cliente.', 'warning');
 								return;
 							}
 
@@ -1188,7 +1194,7 @@ function fill_table(tipo) {
 								document.querySelector('#cliente_modificar_direccion').value = cliente.direccion;
 							})
 							.catch(function(error) {
-								bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'info');
+								bootstrapAlert('Se ha producido un fallo buscando la información del cliente.', 'error');
 								console.log('Error buscar cliente: ' + error);
 							});
 
@@ -1221,7 +1227,7 @@ function fill_table(tipo) {
                 'type': 'GET',
                 'dataSrc': '',
                 'error': function (jqXHR, ajaxOptions, thrownError) {
-                    bootstrapAlert('Ha ocurrido un error al cargar la lista de clientes', 'error');
+					bootstrapAlert('Se ha producido un fallo buscando la información del clientes.', 'error');
                     console.log('Error buscar clientes: ' + thrownError);
                 }
             },
@@ -1278,7 +1284,6 @@ function fill_table(tipo) {
 			$('#tabla_clientes tbody').addClass('flex flex-wrap');
 			$('#tabla_clientes tbody tr').addClass('lg:w-1/4 md:w-1/3 sm:w-full');
 		});
-
 
 	}else if(tipo === 'usuarios') {
 		$("#tabla_usuarios thead").hide();
