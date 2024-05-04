@@ -1079,6 +1079,7 @@ function updateServicesSelect() {
 		});
 
 		servicio_reset_table('registro_agregar_servicios');
+		
 	})
 	.catch(function(error) {console.log('Error buscar servicios: ' + error);});
 }
