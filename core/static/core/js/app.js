@@ -431,15 +431,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				container_producto_agregar_caucho.style.display = 'none';
 				container_producto_agregar_rin.style.display = 'none';
 			}
-
-
-			/* const precio = $("option[value=" + $(this).val() + "]", this).attr('data-precio');
-			const cantidad = $("option[value=" + $(this).val() + "]", this).attr('data-cantidad');
-
-			this.parentElement.parentElement.parentElement.querySelector('.input_precio').value = precio;
-			this.parentElement.parentElement.parentElement.querySelector('.input_precio_original').value = precio;
-			this.parentElement.parentElement.parentElement.querySelector('.input_cantidad').value = 1;
-			this.parentElement.parentElement.parentElement.querySelector('.input_cantidad').max = cantidad; */
 		});
 
 		// Agregar producto
@@ -455,8 +446,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				console.log(result);
 
 		    	if(!result.error) {
-		    		bootstrapAlert('Producto registrado con éxito', 'success');
-					
+		    		bootstrapAlert('Registro del producto realizado satisfactoriamente.', 'success');
 					modal('#agregarProductoModal', 'hide');
 		    		this.reset();
 
@@ -469,24 +459,21 @@ document.addEventListener('DOMContentLoaded', function() {
 					
 				} else if(result.error == 'No permission.') {
 					modal('#agregarProductoModal', 'hide');
-					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de usuarios', 'error');
+					bootstrapAlert('Los privilegios de tu cuenta no permiten realizar registros de productos.', 'error');
 
 		    	} else if(result.error == 'DoesNotExist.') {
 					modal('#agregarProductoModal', 'hide');
-		    		bootstrapAlert('usuario no está registrado', 'error');
+		    		bootstrapAlert('El producto no se encuentra registrado en el sistema.', 'error');
 
-		    	} else if(result.error == 'CedulaNotUnique.') {
-		    		bootstrapAlert('Ya existe usuario registrado con este rif', 'error');
-					
 		    	} else if(result.error == 'ValueError.') {
-		    		bootstrapAlert('Ingrese todos los campos correctamente', 'error');
+		    		bootstrapAlert('Asegúrese de completar todos los campos de forma adecuada.', 'error');
 
 		    	} else {
-		    		bootstrapAlert('Ha ocurrido un error al modificar la información del usuario!');
+		    		bootstrapAlert('Se ha producido un fallo al registrar la información del producto.', 'error');
 		    	}
 		    })
 		    .catch(function(error) {
-		    	bootstrapAlert('Ha ocurrido un error al modificar la información del usuario!', 'error');
+		    	bootstrapAlert('Se ha producido un fallo al registrar la información del producto.', 'error');
 		    	console.log('Error: ' + error);
 		    });
 
@@ -505,8 +492,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		    .then(response => response.json())
 		    .then(result => {
 		    	if(!result.error) {
-		    		bootstrapAlert('Producto modificado con éxito', 'success');
-
+					bootstrapAlert('Actualización de la información del producto realizada satifastoriamente.', 'success');
 		    		modal('#modificarProductoModal', 'hide');
 		    		this.reset();
 
@@ -518,20 +504,21 @@ document.addEventListener('DOMContentLoaded', function() {
 		    		}, 100);
 				} else if(result.error == 'No permission.') {
 					modal('#modificarProductoModal', 'hide');
-					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de Proveedors', 'error');
+					bootstrapAlert('Los privilegios de tu cuenta no permiten realizar cambios en la información de los productos.', 'error');
+
 		    	} else if(result.error == 'DoesNotExist.') {
 		    		modal('#modificarProductoModal', 'hide');
-		    		bootstrapAlert('Proveedor no está registrado', 'error');
-		    	} else if(result.error == 'CedulaNotUnique.') {
-		    		bootstrapAlert('Ya existe Proveedor registrado con esta cédula de identidad', 'error');
+		    		bootstrapAlert('El producto no se encuentra registrado en el sistema.', 'error');
+
 		    	} else if(result.error == 'ValueError.') {
-		    		bootstrapAlert('Ingrese todos los campos correctamente', 'error');
+		    		bootstrapAlert('Asegúrese de completar todos los campos de forma adecuada.', 'error');
+
 		    	} else {
-		    		bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!');
+		    		bootstrapAlert('Se ha producido un fallo al actualizar la información del producto.');
 		    	}
 		    })
 		    .catch(function(error) {
-		    	bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!', 'error');
+		    	bootstrapAlert('Se ha producido un fallo al actualizar la información del producto.');
 		    	console.log('Error: ' + error);
 		    });
 
@@ -556,8 +543,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			.then(response => response.json())
 			.then(result => {
 				if(!result.error) {
-					bootstrapAlert('Cantidad de producto sumada con éxito', 'success');
-
+					bootstrapAlert('La cantidad de producto se ha añadido satifastoriamente.', 'success');
 					modal('#cantidadProductoModal', 'hide');
 					document.querySelector('#producto_cantidad_valor').value = 0;
 
@@ -566,24 +552,21 @@ document.addEventListener('DOMContentLoaded', function() {
 					}, 100);
 				} else if(result.error == 'No permission.') {
 					modal('#cantidadProductoModal', 'hide');
-					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de Proveedors', 'error');
+					bootstrapAlert('Los privilegios de tu cuenta no permiten realizar cambios en la información de los productos.', 'error');
 
 				} else if(result.error == 'DoesNotExist.') {
 					modal('#cantidadProductoModal', 'hide');
-					bootstrapAlert('Proveedor no está registrado', 'error');
-
-				} else if(result.error == 'CedulaNotUnique.') {
-					bootstrapAlert('Ya existe Proveedor registrado con esta cédula de identidad', 'error');
+					bootstrapAlert('El producto no se encuentra registrado en el sistema.', 'error');
 
 				} else if(result.error == 'ValueError.') {
-					bootstrapAlert('Ingrese todos los campos correctamente', 'error');
+					bootstrapAlert('Asegúrese de completar todos los campos de forma adecuada.', 'error');
 
 				} else {
-					bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!');
+					bootstrapAlert('Se ha producido un fallo al actualizar la información del producto.');
 				}
 			})
 			.catch(function(error) {
-				bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!', 'error');
+				bootstrapAlert('Se ha producido un fallo al actualizar la información del producto.');
 				console.log('Error: ' + error);
 			});
 		});
@@ -606,8 +589,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			.then(response => response.json())
 			.then(result => {
 				if(!result.error) {
-					bootstrapAlert('Cantidad de producto restada con éxito', 'success');
-
+					bootstrapAlert('La cantidad de producto se ha reducido satisfactoriamente.', 'success');
 					modal('#cantidadProductoModal', 'hide');
 					document.querySelector('#producto_cantidad_valor').value = 0;
 
@@ -616,24 +598,21 @@ document.addEventListener('DOMContentLoaded', function() {
 					}, 100);
 				} else if(result.error == 'No permission.') {
 					modal('#cantidadProductoModal', 'hide');
-					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de Proveedors', 'error');
+					bootstrapAlert('Los privilegios de tu cuenta no permiten realizar cambios en la información de los productos.', 'error');
 
 				} else if(result.error == 'DoesNotExist.') {
 					modal('#cantidadProductoModal', 'hide');
-					bootstrapAlert('Proveedor no está registrado', 'error');
-
-				} else if(result.error == 'CedulaNotUnique.') {
-					bootstrapAlert('Ya existe Proveedor registrado con esta cédula de identidad', 'error');
+					bootstrapAlert('El producto no se encuentra registrado en el sistema.', 'error');
 
 				} else if(result.error == 'ValueError.') {
-					bootstrapAlert('Ingrese todos los campos correctamente', 'error');
+					bootstrapAlert('Asegúrese de completar todos los campos de forma adecuada.', 'error');
 
 				} else {
-					bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!');
+					bootstrapAlert('Se ha producido un fallo al actualizar la información del producto.');
 				}
 			})
 			.catch(function(error) {
-				bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!', 'error');
+				bootstrapAlert('Se ha producido un fallo al actualizar la información del producto.');
 				console.log('Error: ' + error);
 			});
 		});
@@ -1293,7 +1272,7 @@ function fill_table(tipo) {
 			$('#tabla_clientes tbody tr').addClass('lg:w-1/4 md:w-1/3 sm:w-full');
 		});
 
-	}else if(tipo === 'usuarios') {
+	} else if(tipo === 'usuarios') {
 		$("#tabla_usuarios thead").hide();
         table = $('#tabla_usuarios').DataTable({
 			'dom': 'Bfrtip',
@@ -1471,7 +1450,7 @@ function fill_table(tipo) {
             $('#tabla_usuarios tbody').addClass('flex flex-wrap');
             $('#tabla_usuarios tbody tr').addClass('lg:w-1/4 md:w-1/3 sm:w-full');
         });
-	}else if(tipo === 'proveedores') {
+	} else if(tipo === 'proveedores') {
         $("#tabla_proveedores thead").hide();
 
         table = $('#tabla_proveedores').DataTable({
@@ -1651,7 +1630,7 @@ function fill_table(tipo) {
 							productos_selected_id = document.querySelector('#productos_selected_id').value;
 
 							if(!productos_selected_id) {
-								alert('No hay producto seleccionado');
+								bootstrapAlert('Debe seleccionar un producto.', 'warning');
 								return;
 							}
 
@@ -1686,6 +1665,7 @@ function fill_table(tipo) {
 
 							})
 							.catch(function(error) {
+								bootstrapAlert('Se ha producido un fallo buscando la información del producto.', 'error');
 								console.log('Error buscar cliente: ' + error);
 							});
 
@@ -1694,7 +1674,7 @@ function fill_table(tipo) {
 				},
 				{
 					'name': 'btn_modificar_producto',
-					'text': 'Modificar',
+					'text': 'Editar',
 					'attr':  {
 						'id': 'btn_modificar_producto', 
 						'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
@@ -1705,7 +1685,7 @@ function fill_table(tipo) {
 							productos_selected_id = document.querySelector('#productos_selected_id').value;
 
 							if(!productos_selected_id) {
-								alert('No hay producto seleccionado');
+								bootstrapAlert('Debe seleccionar un producto.', 'warning');
 								return;
 							}
 
@@ -1741,6 +1721,7 @@ function fill_table(tipo) {
 
 							})
 							.catch(function(error) {
+								bootstrapAlert('Se ha producido un fallo buscando la información del producto.', 'error');
 								console.log('Error buscar cliente: ' + error);
 							});
 
@@ -1773,7 +1754,7 @@ function fill_table(tipo) {
 							productos_selected_id = document.querySelector('#productos_selected_id').value;
 
 							if(!productos_selected_id) {
-								alert('No hay producto seleccionado');
+								bootstrapAlert('Debe seleccionar un producto.', 'warning');
 								return;
 							}
 
@@ -1793,7 +1774,7 @@ function fill_table(tipo) {
                 'type': 'GET',
                 'dataSrc': '',
                 'error': function (jqXHR, ajaxOptions, thrownError) {
-                    bootstrapAlert('Ha ocurrido un error al cargar la lista de productos', 'error');
+                    bootstrapAlert('Se ha producido un fallo buscando la información de productos.', 'error');
                     console.log('Error buscar productos: ' + thrownError);
                 }
             },
@@ -2050,7 +2031,7 @@ function fill_table(tipo) {
 		});
 
 		
-    }else if(tipo === 'servicios') {
+    } else if(tipo === 'servicios') {
         $("#tabla_servicios thead").hide();
         table = $('#tabla_servicios').DataTable({
 			'dom': 'Bfrtip',
@@ -2201,7 +2182,7 @@ function fill_table(tipo) {
             $('#tabla_servicios tbody tr').addClass('lg:w-1/4 md:w-1/3 sm:w-full');
         });
 
-	}else if(tipo === 'servicio-facturado') {
+	} else if(tipo === 'servicio-facturado') {
 		$("#tabla_servicios_facturados thead").hide();
         table = $('#tabla_servicios_facturados').DataTable({
 			'dom': 'Bfrtip',
