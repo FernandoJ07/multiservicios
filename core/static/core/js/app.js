@@ -155,33 +155,34 @@ document.addEventListener('DOMContentLoaded', function() {
 		    .then(result => {
 				console.log(result)
 		    	if(!result.error) {
-		    		bootstrapAlert('Proveedor registrado con éxito', 'success');
+					bootstrapAlert('Registro del proveedor realizado satisfactoriamente.', 'success');
 					modal('#agregarProveedorModal', 'hide');
 		    		this.reset();
 
 		    		setTimeout(() => {
 		    			fill_table('proveedores');
 		    		}, 100);
+
 				} else if(result.error == 'No permission.') {
 					modal('#agregarProveedorModal', 'hide');
-					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de proveedoress', 'error');
+					bootstrapAlert('Los privilegios de tu cuenta no permiten realizar registros de proveedores.', 'error');
 
 		    	} else if(result.error == 'DoesNotExist.') {
 					modal('#agregarProveedorModal', 'hide');
-		    		bootstrapAlert('Proveedor no está registrado', 'error');
+		    		bootstrapAlert('El proveedor no se encuentra registrado en el sistema.', 'error');
 
 		    	} else if(result.error == 'CedulaNotUnique.') {
-		    		bootstrapAlert('Ya existe Proveedor registrado con esta cédula de identidad', 'error');
+		    		bootstrapAlert('Hay un proveedor registrado con este número de cédula de identidad.', 'error');
 					
 		    	} else if(result.error == 'ValueError.') {
-		    		bootstrapAlert('Ingrese todos los campos correctamente', 'error');
+		    		bootstrapAlert('Asegúrese de completar todos los campos de forma adecuada.', 'error');
 
 		    	} else {
-		    		bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!');
+		    		bootstrapAlert('Se ha producido un fallo al registrar la información del proveedor.', 'error');
 		    	}
 		    })
 		    .catch(function(error) {
-		    	bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!', 'error');
+		    	bootstrapAlert('Se ha producido un fallo al registrar la información del proveedor.', 'error');
 		    	console.log('Error: ' + error);
 		    });
 
@@ -200,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		    .then(response => response.json())
 		    .then(result => {
 		    	if(!result.error) {
-		    		bootstrapAlert('Proveedor modificado con éxito', 'success');
+		    		bootstrapAlert('Actualización de la información del proveedor realizada satifastoriamente.', 'success');
 		    		modal('#modificarProveedorModal', 'hide');
 		    		this.reset();
 
@@ -209,20 +210,24 @@ document.addEventListener('DOMContentLoaded', function() {
 		    		}, 100);
 				} else if(result.error == 'No permission.') {
 					modal('#modificarProveedorModal', 'hide');
-					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de Proveedors', 'error');
+					bootstrapAlert('Los privilegios de tu cuenta no permiten realizar cambios en la información de los proveedores.', 'error');
+
 		    	} else if(result.error == 'DoesNotExist.') {
 		    		modal('#modificarProveedorModal', 'hide');
-		    		bootstrapAlert('Proveedor no está registrado', 'error');
+		    		bootstrapAlert('El proveedor no se encuentra registrado en el sistema.', 'error');
+					
 		    	} else if(result.error == 'CedulaNotUnique.') {
-		    		bootstrapAlert('Ya existe Proveedor registrado con esta cédula de identidad', 'error');
+		    		bootstrapAlert('Hay un proveedor registrado con este número de cédula de identidad.', 'error');
+
 		    	} else if(result.error == 'ValueError.') {
-		    		bootstrapAlert('Ingrese todos los campos correctamente', 'error');
+		    		bootstrapAlert('Asegúrese de completar todos los campos de forma adecuada.', 'error');
+
 		    	} else {
-		    		bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!');
+		    		bootstrapAlert('Se ha producido un fallo al actualizar la información del proveedor');
 		    	}
 		    })
 		    .catch(function(error) {
-		    	bootstrapAlert('Ha ocurrido un error al modificar la información del Proveedor!', 'error');
+		    	bootstrapAlert('Se ha producido un fallo al actualizar la información del proveedor');
 		    	console.log('Error: ' + error);
 		    });
 
@@ -241,24 +246,25 @@ document.addEventListener('DOMContentLoaded', function() {
 		    .then(result => {
 		    	if(!result.error) {
 					modal('#eliminarProveedorModal', 'hide');
-		    		bootstrapAlert('Proveedor eliminado correctamente', 'success');
+		    		bootstrapAlert('Información del proveedor eliminada satisfactoriamente.', 'success');
 
 		    		setTimeout(() => {
 						fill_table('proveedores');
 					}, 100);
 		    	} else if(result.error == 'DoesNotExist.') {
 					modal('#eliminarProveedorModal', 'hide');
-		    		bootstrapAlert('Proveedor no está registrado', 'error');
+		    		bootstrapAlert('El proveedor no se encuentra registrado en el sistema.', 'error');
 		    	}
 		    	else if(result.error == 'No permission.') {
 					modal('#eliminarProveedorModal', 'hide');
-		    		bootstrapAlert('Tu cuenta no tiene permisos para eliminar Proveedors', 'error');
+		    		bootstrapAlert('Los privilegios de tu cuenta no permiten eliminar la información de los proveedores.', 'error');
+					
 		    	} else {
-		    		bootstrapAlert('Ha ocurrido un error al eliminar Proveedor');
+		    		bootstrapAlert('Se ha producido un fallo al eliminar la información del proveedor.');
 		    	}
 		    })
 		    .catch(function(error) {
-		    	bootstrapAlert('Ha ocurrido un error al eliminar Proveedor', 'error');
+		    	bootstrapAlert('Se ha producido un fallo al eliminar la información del proveedor.');
 		    	console.log('Error: ' + error);
 		    });
 		});
@@ -1465,6 +1471,7 @@ function fill_table(tipo) {
         });
 	}else if(tipo === 'proveedores') {
         $("#tabla_proveedores thead").hide();
+
         table = $('#tabla_proveedores').DataTable({
 			'dom': 'Bfrtip',
 			'buttons': [
@@ -1481,7 +1488,7 @@ function fill_table(tipo) {
                             proveedores_selected_id = document.querySelector('#proveedores_selected_id').value;
 
                             if(!proveedores_selected_id) {
-                                alert('No hay proveedores seleccionado');
+                                bootstrapAlert('Debe seleccionar un proveedor.', 'warning');
                                 return;
                             }
 
@@ -1497,7 +1504,7 @@ function fill_table(tipo) {
 								document.querySelector('#proveedor_detalles_direccion').value = proveedor.direccion;
                             })
                             .catch(function(error) {
-                                bootstrapAlert('Ha ocurrido un error al buscar el proveedor', 'error');
+                                bootstrapAlert('Se ha producido un fallo buscando la información del proveedor.', 'error');
                                 console.log('Error buscar proveedor: ' + error);
                             });
 
@@ -1506,7 +1513,7 @@ function fill_table(tipo) {
                 },
                 {
                     'name': 'btn_modificar_proveedor',
-                    'text': 'Modificar',
+                    'text': 'Editar',
                     'attr':  {
                         'id': 'btn_modificar_proveedor', 
                         'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
@@ -1517,7 +1524,7 @@ function fill_table(tipo) {
                             proveedores_selected_id = document.querySelector('#proveedores_selected_id').value;
 
                             if(!proveedores_selected_id) {
-                                alert('No hay proveedores seleccionado');
+                                bootstrapAlert('Debe seleccionar un proveedor.', 'warning');
                                 return;
                             }
 
@@ -1532,7 +1539,7 @@ function fill_table(tipo) {
 								document.querySelector('#proveedor_modificar_direccion').value = proveedor.direccion;
                             })
                             .catch(function(error) {
-                                bootstrapAlert('Ha ocurrido un error al buscar el proveedor', 'error');
+                                bootstrapAlert('Se ha producido un fallo buscando la información del proveedor.', 'error');
                                 console.log('Error buscar proveedor: ' + error);
                             });
 
@@ -1565,7 +1572,7 @@ function fill_table(tipo) {
 				'type': 'GET',
 				'dataSrc': '',
 				'error': function(jqXHR, ajaxOptions, thrownError) {
-					bootstrapAlert('Ha ocurrido un error al cargar los proveedoress', 'error');
+					bootstrapAlert('Se ha producido un fallo buscando la información del proveedores.', 'error');
 					console.log('Error buscar proveedoress: ' + thrownError);
 				 }
 			},
