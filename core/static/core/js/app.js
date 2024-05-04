@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		    .then(result => {
 				console.log(result)
 		    	if(!result.error) {
-		    		bootstrapAlert('usuario registrado con éxito', 'success');
+		    		bootstrapAlert('Registro del usuario realizado satisfactoriamente.', 'success');
 					modal('#agregarUsuarioModal', 'hide');
 		    		this.reset();
 
@@ -301,30 +301,29 @@ document.addEventListener('DOMContentLoaded', function() {
 		    		}, 100);
 				} else if(result.error == 'No permission.') {
 					modal('#agregarUsuarioModal', 'hide');
-					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de usuarios', 'error');
+					bootstrapAlert('Los privilegios de tu cuenta no permiten realizar registros de usuarios.', 'error');
 
 		    	} else if(result.error == 'DoesNotExist.') {
 					modal('#agregarUsuarioModal', 'hide');
-		    		bootstrapAlert('usuario no está registrado', 'error');
+		    		bootstrapAlert('El usuario no se encuentra registrado en el sistema.', 'error');
 
 		    	} else if(result.error == 'CedulaNotUnique.') {
-		    		bootstrapAlert('Ya existe usuario registrado con este rif', 'error');
+		    		bootstrapAlert('Hay un usuario registrado con este número de cédula de identidad.', 'error');
 					
 		    	} else if(result.error == 'ValueError.') {
-		    		bootstrapAlert('Ingrese todos los campos correctamente', 'error');
+		    		bootstrapAlert('Asegúrese de completar todos los campos de forma adecuada.', 'error');
 
 		    	} else {
-		    		bootstrapAlert('Ha ocurrido un error al modificar la información del usuario!');
+		    		bootstrapAlert('Se ha producido un fallo al registrar la información del usuario.', 'error');
 		    	}
 		    })
 		    .catch(function(error) {
-		    	bootstrapAlert('Ha ocurrido un error al modificar la información del usuario!', 'error');
+		    	bootstrapAlert('Se ha producido un fallo al registrar la información del usuario.', 'error');
 		    	console.log('Error: ' + error);
 		    });
 
 			e.preventDefault();
 		});
-
 		
 		// Modificar usuario
 		$('#form_usuario_modificar').submit(function(e) {
@@ -338,7 +337,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		    .then(response => response.json())
 		    .then(result => {
 		    	if(!result.error) {
-		    		bootstrapAlert('Usuario modificado con éxito', 'success');
+		    		bootstrapAlert('Actualización de la información del usuario realizada satifastoriamente.', 'success');
 		    		modal('#modificarUsuarioModal', 'hide');
 		    		this.reset();
 
@@ -347,26 +346,29 @@ document.addEventListener('DOMContentLoaded', function() {
 		    		}, 100);
 				} else if(result.error == 'No permission.') {
 					modal('#modificarUsuarioModal', 'hide');
-					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de Usuarios', 'error');
+					bootstrapAlert('Los privilegios de tu cuenta no permiten realizar cambios en la información de los usuarios.', 'error');
+
 		    	} else if(result.error == 'DoesNotExist.') {
 		    		modal('#modificarUsuarioModal', 'hide');
-		    		bootstrapAlert('Usuario no está registrado', 'error');
+		    		bootstrapAlert('El usuario no se encuentra registrado en el sistema.', 'error');
+
 		    	} else if(result.error == 'CedulaNotUnique.') {
-		    		bootstrapAlert('Ya existe Usuario registrado con esta cédula de identidad', 'error');
+		    		bootstrapAlert('Hay un usuario registrado con este número de cédula de identidad.', 'error');
+
 		    	} else if(result.error == 'ValueError.') {
-		    		bootstrapAlert('Ingrese todos los campos correctamente', 'error');
+		    		bootstrapAlert('Asegúrese de completar todos los campos de forma adecuada.', 'error');
+
 		    	} else {
-		    		bootstrapAlert('Ha ocurrido un error al modificar la información del Usuario!');
+		    		bootstrapAlert('Se ha producido un fallo al actualizar la información del usuario');
 		    	}
 		    })
 		    .catch(function(error) {
-		    	bootstrapAlert('Ha ocurrido un error al modificar la información del Usuario!', 'error');
+		    	bootstrapAlert('Se ha producido un fallo al actualizar la información del usuario');
 		    	console.log('Error: ' + error);
 		    });
 
 			e.preventDefault();
 		});
-
 
 		// Modal eliminar usuario
 		$('#btn_usuario_eliminar').on('click', function() {
@@ -1309,7 +1311,7 @@ function fill_table(tipo) {
                             usuarios_selected_id = document.querySelector('#usuarios_selected_id').value;
 
                             if(!usuarios_selected_id) {
-                                alert('No hay usuario seleccionado');
+                                bootstrapAlert('Debe seleccionar un usuario.', 'warning');
                                 return;
                             }
 
@@ -1324,8 +1326,8 @@ function fill_table(tipo) {
 								document.querySelector('#usuario_detalles_rol').value = usuario.rol;
 
                             })
-                            .catch(function(error) {
-                                bootstrapAlert('Ha ocurrido un error al buscar el usuario', 'error');
+                            .catch(function(error) {                        
+								bootstrapAlert('Se ha producido un fallo buscando la información del usuario.', 'error');
                                 console.log('Error buscar usuario: ' + error);
                             });
 
@@ -1334,7 +1336,7 @@ function fill_table(tipo) {
                 },
                 {
                     'name': 'btn_modificar_usuario',
-                    'text': 'Modificar',
+                    'text': 'Editar',
                     'attr':  {
                         'id': 'btn_modificar_usuario', 
                         'class': 'bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow', 
@@ -1345,7 +1347,7 @@ function fill_table(tipo) {
                             usuarios_selected_id = document.querySelector('#usuarios_selected_id').value;
 
                             if(!usuarios_selected_id) {
-                                alert('No hay usuario seleccionado');
+                                bootstrapAlert('Debe seleccionar un usuario.', 'warning');
                                 return;
                             }
 
@@ -1360,7 +1362,7 @@ function fill_table(tipo) {
 								document.querySelector('#usuario_modificar_rol').value = usuario.rol;
                             })
                             .catch(function(error) {
-                                bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'error');
+                                bootstrapAlert('Se ha producido un fallo buscando la información del usuario.', 'error');
                                 console.log('Error buscar cliente: ' + error);
                             });
 
@@ -1393,7 +1395,7 @@ function fill_table(tipo) {
 				'type': 'GET',
 				'dataSrc': '',
 				'error': function(jqXHR, ajaxOptions, thrownError) {
-					bootstrapAlert('Ha ocurrido un error al cargar los usuarios', 'error');
+					bootstrapAlert('Se ha producido un fallo buscando la información de usuarios.', 'error');
 					console.log('Error buscar usuarios: ' + thrownError);
 				 }
 			},
