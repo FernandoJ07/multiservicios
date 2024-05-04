@@ -10,7 +10,6 @@ from .models import *
 
 @login_required
 def index(request):
-
     data = {
             'productos_total': len(Producto.objects.all()),
             'ventas_hoy': len(Venta.objects.filter(fecha=timezone.now().date())),

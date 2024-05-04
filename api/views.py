@@ -57,7 +57,7 @@ def usuarios(request, id=None):
             else:
                 User.objects.create_user(**data)
 
-            return JsonResponse({"message": "Usuario agregado."}, status=201)
+            return JsonResponse({"message": "Usuario agregado exitosamente."}, status=201)
         except IntegrityError as e:
             if "UNIQUE constraint failed: core_user.cedula" in e.args:
                 return JsonResponse({"error": "CedulaNotUnique."}, status=417)

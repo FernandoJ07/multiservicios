@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	if(window.location.pathname.split('/')[1] === 'usuarios') {
         
-		// Agregar usuario
+		// Modal Agregar usuario
 		$('#btn_usuario_modal_agregar').on('click', function() {
 			modal('#agregarUsuarioModal', 'show');
 		});
@@ -278,15 +278,17 @@ document.addEventListener('DOMContentLoaded', function() {
 		   	})
 		    .then(response => response.json())
 		    .then(result => {
-				console.log(result)
+
 		    	if(!result.error) {
-		    		bootstrapAlert('usuario registrado con éxito', 'success');
+		    		
+					bootstrapAlert(result.message, 'success');
 					modal('#agregarUsuarioModal', 'hide');
 		    		this.reset();
 
 		    		setTimeout(() => {
 		    			fill_table('usuarios');
 		    		}, 100);
+
 				} else if(result.error == 'No permission.') {
 					modal('#agregarUsuarioModal', 'hide');
 					bootstrapAlert('Tu cuenta no tiene permisos para modificar información de usuarios', 'error');
@@ -296,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		    		bootstrapAlert('usuario no está registrado', 'error');
 
 		    	} else if(result.error == 'CedulaNotUnique.') {
-		    		bootstrapAlert('Ya existe usuario registrado con este rif', 'error');
+		    		bootstrapAlert('Ya existe usuario registrado con esta cedula', 'error');
 					
 		    	} else if(result.error == 'ValueError.') {
 		    		bootstrapAlert('Ingrese todos los campos correctamente', 'error');
@@ -1281,8 +1283,10 @@ function fill_table(tipo) {
 
 
 	}else if(tipo === 'usuarios') {
+		
 		$("#tabla_usuarios thead").hide();
-        table = $('#tabla_usuarios').DataTable({
+        
+		table = $('#tabla_usuarios').DataTable({
 			'dom': 'Bfrtip',
 			'buttons': [
                 {
@@ -1315,7 +1319,6 @@ function fill_table(tipo) {
                             })
                             .catch(function(error) {
                                 bootstrapAlert('Ha ocurrido un error al buscar el usuario', 'error');
-                                console.log('Error buscar usuario: ' + error);
                             });
 
                             modal('#detallesUsuarioModal', 'show');
@@ -1383,7 +1386,6 @@ function fill_table(tipo) {
 				'dataSrc': '',
 				'error': function(jqXHR, ajaxOptions, thrownError) {
 					bootstrapAlert('Ha ocurrido un error al cargar los usuarios', 'error');
-					console.log('Error buscar usuarios: ' + thrownError);
 				 }
 			},
 			'columns': [
