@@ -102,3 +102,7 @@ button:disabled  {
 .contenedor_labels{
     margin: 10px 0px !important;
 }
+
+.tbody_table{
+    margin-top: 20px;
+}
