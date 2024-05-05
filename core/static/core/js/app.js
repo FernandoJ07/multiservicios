@@ -688,11 +688,12 @@ document.addEventListener('DOMContentLoaded', function() {
 		$('#venta_agregar_productos tbody').on('change', '.select_producto', function () {
 			const precio = $("option[value=" + $(this).val() + "]", this).attr('data-precio');
 			const cantidad = $("option[value=" + $(this).val() + "]", this).attr('data-cantidad');
-
-			this.parentElement.parentElement.parentElement.parentElement.parentElement.querySelector('.input_precio').value = precio;
-			this.parentElement.parentElement.parentElement.parentElement.parentElement.querySelector('.input_precio_original').value = precio;
-			this.parentElement.parentElement.parentElement.parentElement.parentElement.querySelector('.input_cantidad').value = 1;
-			this.parentElement.parentElement.parentElement.parentElement.parentElement.querySelector('.input_cantidad').max = cantidad;
+			let tr = this.parentElement.parentElement.parentElement.parentElement.parentElement;
+			
+			tr.querySelector('.input_precio').value = precio;
+			tr.querySelector('.input_precio_original').value = precio;
+			tr.querySelector('.input_cantidad').value = 1;
+			tr.querySelector('.input_cantidad').max = cantidad;
 		});
 
 		//Actualiza el precio dependiendo de la cantidad del producto que se añada
@@ -953,12 +954,14 @@ document.addEventListener('DOMContentLoaded', function() {
 		}, 500);
 		
 		//Añade la información correspondiente al producto que está en el selectpicker oculto y lo añade a los que se generan en la tabla de venta
-		$('#registro_agregar_servicios tbody').off('change', '.selectpicker');
-		$('#registro_agregar_servicios tbody').on('change', '.selectpicker', function () {
+		$('#registro_agregar_servicios tbody').off('change', '.select_servicio');
+		$('#registro_agregar_servicios tbody').on('change', '.select_servicio', function () {
 			const precio = $("option[value=" + $(this).val() + "]", this).attr('data-precio');
 
-			this.parentElement.parentElement.parentElement.querySelector('.input_precio').value = precio;
-			this.parentElement.parentElement.parentElement.querySelector('.input_precio_original').value = precio;
+			let tr = this.parentElement.parentElement.parentElement.parentElement.parentElement;
+			
+			tr.querySelector('.input_precio').value = precio;
+			tr.querySelector('.input_precio_original').value = precio;
 		});
 
 		$(document).on('change, mouseup, keyup, input', '#registro_agregar_servicios tbody .input_cantidad', function () {
@@ -1063,75 +1066,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 });
-
-function updateServicesSelect() {
-	const services_options = document.querySelector('#services_options');
-
-	$(services_options).selectpicker('destroy').empty().append('<option value="" selected>Seleccionar servicio</option>');
-	
-	fetch('/api/servicios')
-	.then(response => response.json())
-	.then(data => {
-		data.forEach(servicio => {
-			var opt = document.createElement('option');
-			opt.value = servicio.codigo;
-			opt.innerHTML = servicio.nombre;
-			opt.dataset.precio = servicio.precio;
-			services_options.appendChild(opt);
-			
-		});
-
-		servicio_reset_table('registro_agregar_servicios');
-		
-	})
-	.catch(function(error) {console.log('Error buscar servicios: ' + error);});
-}
-
-function updateProductSelect() {
-	const product_options = document.querySelector('#product_options');
-
-	$(product_options).selectpicker('destroy').empty().append('<option value="" selected>Seleccionar producto</option>');
-	
-	fetch('/api/productos')
-	.then(response => response.json())
-	.then(data => {
-		data.forEach(producto => {
-			if(producto.cantidad > 0){
-				var opt = document.createElement('option');
-				opt.value = producto.id;
-				opt.innerHTML = producto.nombre;
-				opt.dataset.cantidad = producto.cantidad;
-				opt.dataset.precio = producto.precio;
-				product_options.appendChild(opt);
-			}
-			
-		});
-
-		producto_reset_table('venta_agregar_productos');
-	})
-	.catch(function(error) {console.log('Error buscar productos: ' + error);});
-}
-
-function generar_div(nombre_label, valor_input, contenedor){
-
-
-	const label = document.createElement('label');
-	label.classList.add('block', 'text-sm', 'text-gray');
-
-	const span = document.createElement('span')
-	span.classList.add('text-gray-700', 'dark:text-gray-400')
-	span.textContent = nombre_label;
-
-	const input = document.createElement('input');
-	input.classList.add('block', 'w-full', 'mt-1', 'text-sm', 'dark:border-gray-600', 'dark:bg-gray-700', 'focus:border-purple-400', 'focus:outline-none', 'focus:shadow-outline-purple', 'dark:text-gray-300', 'dark:focus:shadow-outline-gray', 'form-input');
-	input.setAttribute('readonly', 'readonly');
-	input.value = valor_input;
-
-	label.appendChild(span);
-	label.appendChild(input);
-
-	contenedor.appendChild(label);
-}
 
 function fill_table(tipo) {
 	if (tipo === 'clientes') {
@@ -2235,14 +2169,14 @@ function fill_table(tipo) {
 
 								const contenedor = document.getElementById('servicios_informacion');
 								contenedor.innerHTML = '';
+
+								const titulo = document.createElement('h4');
+								titulo.textContent = 'Servicios Asociados';
+								titulo.classList.add('servicios_titulo', 'text-lg', 'font-semibold', 'text-gray-600', 'dark:text-gray-300');
+								contenedor.appendChild(titulo);
+								
 								const serviciosFacturado = servicio_facturado.servicios;
 								serviciosFacturado.forEach((servicioFacturado) => {
-
-									const titulo = document.createElement('h4');
-									titulo.textContent = 'Servicios Asociados';
-									titulo.classList.add('servicios_titulo', 'text-lg', 'font-semibold', 'text-gray-600', 'dark:text-gray-300');
-									contenedor.appendChild(titulo);
-
 									const contenedor_labels = document.createElement('div')
 									contenedor_labels.classList.add('contenedor_labels')
 									contenedor.appendChild(contenedor_labels);
@@ -2359,9 +2293,9 @@ function servicios_get_table_data(table_id) {
     let all_data_table = [];
 
     $('#' + table_id + ' tbody tr').each(function(index) {
-        const servicio_id = this.children[1].querySelector('.selectpicker').value;
-        const monto = this.children[2].children[0].value;
 
+		const servicio_id = this.children[1].querySelector('.select_servicio').value;
+        const monto = this.children[2].children[0].children[1].value;
 
         if (servicio_id) {
             let current = {
@@ -2373,6 +2307,74 @@ function servicios_get_table_data(table_id) {
     });
 
     return all_data_table;
+}
+
+function updateServicesSelect() {
+	const services_options = document.querySelector('#services_options');
+
+	$(services_options).selectpicker('destroy').empty().append('<option value="" selected>Seleccionar servicio</option>');
+	fetch('/api/servicios')
+	.then(response => response.json())
+	.then(data => {
+		data.forEach(servicio => {
+			var opt = document.createElement('option');
+			opt.value = servicio.codigo;
+			opt.innerHTML = servicio.nombre;
+			opt.dataset.precio = servicio.precio;
+			services_options.appendChild(opt);
+			
+		});
+
+		servicio_reset_table('registro_agregar_servicios');
+		
+	})
+	.catch(function(error) {console.log('Error buscar servicios: ' + error);});
+}
+
+function updateProductSelect() {
+	const product_options = document.querySelector('#product_options');
+
+	$(product_options).selectpicker('destroy').empty().append('<option value="" selected>Seleccionar producto</option>');
+	
+	fetch('/api/productos')
+	.then(response => response.json())
+	.then(data => {
+		data.forEach(producto => {
+			if(producto.cantidad > 0){
+				var opt = document.createElement('option');
+				opt.value = producto.id;
+				opt.innerHTML = producto.nombre;
+				opt.dataset.cantidad = producto.cantidad;
+				opt.dataset.precio = producto.precio;
+				product_options.appendChild(opt);
+			}
+			
+		});
+
+		producto_reset_table('venta_agregar_productos');
+	})
+	.catch(function(error) {console.log('Error buscar productos: ' + error);});
+}
+
+function generar_div(nombre_label, valor_input, contenedor){
+
+
+	const label = document.createElement('label');
+	label.classList.add('block', 'text-sm', 'text-gray');
+
+	const span = document.createElement('span')
+	span.classList.add('text-gray-700', 'dark:text-gray-400')
+	span.textContent = nombre_label;
+
+	const input = document.createElement('input');
+	input.classList.add('block', 'w-full', 'mt-1', 'text-sm', 'dark:border-gray-600', 'dark:bg-gray-700', 'focus:border-purple-400', 'focus:outline-none', 'focus:shadow-outline-purple', 'dark:text-gray-300', 'dark:focus:shadow-outline-gray', 'form-input');
+	input.setAttribute('readonly', 'readonly');
+	input.value = valor_input;
+
+	label.appendChild(span);
+	label.appendChild(input);
+
+	contenedor.appendChild(label);
 }
 
 function productos_add_table_row(table_id) {
@@ -2394,7 +2396,7 @@ function productos_add_table_row(table_id) {
 				<div class="text-sm">
 					<label class="block text-sm">
 						<div class=" text-gray-500 focus-within:text-purple-600 dark:focus-within:text-purple-400">
-							<select id="product_options"
+							<select
 								class="select_producto block w-24 mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input"
 								data-live-search="true">
 								${select_options}
@@ -2439,7 +2441,7 @@ function productos_add_table_row(table_id) {
 		`
 	);
 
-	$('.selectpicker').selectpicker();
+	// $('.selectpicker').selectpicker();
 }
 
 function servicios_add_table_row(table_id) {
@@ -2447,22 +2449,57 @@ function servicios_add_table_row(table_id) {
 	const select_options = document.querySelector('#services_options').innerHTML;
 
 	$('#' + table_id).find('tbody').append(
-		`<tr>
-			<td scope="row">${count+1}</td>
-			<td>
-				<select class="form-control selectpicker" data-live-search="true">${select_options}</select>
+		`
+		<tr class="text-gray-700 dark:text-gray-400">
+			<td class="px-4 py-3">
+				<div class="flex items-center text-sm">
+					<div>
+						<p class="font-semibold">${count+1}</p>
+
+					</div>
+				</div>
 			</td>
-			<td>
-				<input type="number" class="form-control input_precio" step=".01" value="0.00" readonly>
-				<input type="hidden" class="input_precio_original" readonly>
+			<td class="px-4 py-3">
+				<div class="text-sm">
+					<label class="block text-sm">
+						<div class=" text-gray-500 focus-within:text-purple-600 dark:focus-within:text-purple-400">
+							<select
+								class="select_servicio block w-24 mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input"
+								data-live-search="true">
+								<option value="">${select_options}</option>
+							</select>
+
+						</div>
+					</label>
+				</div>
 			</td>
-			<td><button type="button" class="btn btn-danger btn-sm" onclick="delete_row(this)"><i class="fa fa-trash"></i></button></td>
-		</tr>`
+			<td class="px-4 py-3 text-sm">
+				<label class="block text-sm">
+					<span class="text-gray-700 dark:text-gray-400">Monto</span>
+					<input
+						class="input_precio block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+						placeholder="0,00" type="number" step=".01" value="0.00" readonly />
+						<input type="hidden" class="input_precio_original" readonly>
+				</label>
+			</td>
+			<td class="px-4 py-3">
+				<div class="flex items-center space-x-4 text-sm">
+					<button
+						class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray"
+						aria-label="Delete" onclick="delete_row(this)">
+						<svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+							<path fill-rule="evenodd"
+								d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+								clip-rule="evenodd"></path>
+						</svg>
+					</button>
+				</div>
+			</td>
+		</tr>
+		`
 	);
 
-
-
-	$('.selectpicker').selectpicker();
+	// $('.selectpicker').selectpicker();
 }
 
 function productos_load_table_data(table_id, data) {
