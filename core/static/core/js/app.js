@@ -684,15 +684,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		
 		//Añade la información correspondiente al producto que está en el selectpicker oculto y lo añade a los que se generan en la tabla de venta
-		$('#venta_agregar_productos tbody').off('change', '.selectpicker');
-		$('#venta_agregar_productos tbody').on('change', '.selectpicker', function () {
+		$('#venta_agregar_productos tbody').off('change', '.select_producto');
+		$('#venta_agregar_productos tbody').on('change', '.select_producto', function () {
 			const precio = $("option[value=" + $(this).val() + "]", this).attr('data-precio');
 			const cantidad = $("option[value=" + $(this).val() + "]", this).attr('data-cantidad');
 
-			this.parentElement.parentElement.parentElement.querySelector('.input_precio').value = precio;
-			this.parentElement.parentElement.parentElement.querySelector('.input_precio_original').value = precio;
-			this.parentElement.parentElement.parentElement.querySelector('.input_cantidad').value = 1;
-			this.parentElement.parentElement.parentElement.querySelector('.input_cantidad').max = cantidad;
+			this.parentElement.parentElement.parentElement.parentElement.parentElement.querySelector('.input_precio').value = precio;
+			this.parentElement.parentElement.parentElement.parentElement.parentElement.querySelector('.input_precio_original').value = precio;
+			this.parentElement.parentElement.parentElement.parentElement.parentElement.querySelector('.input_cantidad').value = 1;
+			this.parentElement.parentElement.parentElement.parentElement.parentElement.querySelector('.input_cantidad').max = cantidad;
 		});
 
 		//Actualiza el precio dependiendo de la cantidad del producto que se añada
@@ -716,6 +716,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				cliente: clienteId,
 				productos: productos
 			}
+
 
 			fetch('/api/ventas/', {
 		    	method: 'POST',
@@ -1130,21 +1131,6 @@ function generar_div(nombre_label, valor_input, contenedor){
 	label.appendChild(input);
 
 	contenedor.appendChild(label);
-}
-
-function bootstrapAlert(message, type) {
-	$('.bootstrap-growl').alert('close');
-
-	$.bootstrapGrowl(message, {
-		ele: 'body', // which element to append to
-		type: type, // (null, 'info', 'error', 'success')
-		offset: {from: 'bottom', amount: 30}, // 'top', or 'bottom'
-		align: 'center', // ('left', 'right', or 'center')
-		width: 800, // (integer, or 'auto')
-		delay: 3000,
-		allow_dismiss: true,
-		stackup_spacing: 10 // spacing between consecutively stacked growls.
-	});
 }
 
 function fill_table(tipo) {
@@ -1898,13 +1884,13 @@ function fill_table(tipo) {
 								contenedor.innerHTML = '';
 								const productos = venta.productos[0];
 								var contador = 0;
+
+								const titulo = document.createElement('h3');
+								titulo.textContent = 'Productos Asociados';
+								titulo.classList.add('servicios_titulo', 'text-lg', 'font-semibold', 'text-gray-600', 'dark:text-gray-300');
+								contenedor.appendChild(titulo);
+								
 								productos.forEach((producto) => {
-
-									const titulo = document.createElement('h3');
-									titulo.textContent = 'Productos Asociados';
-									titulo.classList.add('servicios_titulo', 'text-lg', 'font-semibold', 'text-gray-600', 'dark:text-gray-300');
-									contenedor.appendChild(titulo);
-
 									const contenedor_labels = document.createElement('div')
 									contenedor_labels.classList.add('contenedor_labels')
 									contenedor.appendChild(contenedor_labels);
@@ -2351,9 +2337,9 @@ function productos_get_table_data(table_id) {
     let all_data_table = [];
 
     $('#' + table_id + ' tbody tr').each(function(index) {
-        const producto_id = this.children[1].querySelector('.selectpicker').value;
-        const cantidad = this.children[2].children[0].value;
-        const monto = this.children[3].children[0].value;
+        const producto_id = this.children[1].querySelector('.select_producto').value;
+        const cantidad = this.children[2].children[0].children[1].value;
+        const monto = this.children[3].children[0].children[1].value;
 
         if (producto_id) {
             let current = {
@@ -2364,6 +2350,7 @@ function productos_get_table_data(table_id) {
             all_data_table.push(current);
         }
     });
+
 
     return all_data_table;
 }
@@ -2393,18 +2380,63 @@ function productos_add_table_row(table_id) {
 	const select_options = document.querySelector('#product_options').innerHTML;
 
 	$('#' + table_id).find('tbody').append(
-		`<tr>
-			<td scope="row">${count+1}</td>
-			<td>
-				<select class="form-control selectpicker" data-live-search="true">${select_options}</select>
+		`
+		<tr class="text-gray-700 dark:text-gray-400">
+			<td class="px-4 py-3">
+				<div class="flex items-center text-sm">
+					<div>
+						<p class="font-semibold">${count+1}</p>
+
+					</div>
+				</div>
 			</td>
-			<td><input type="number" class="form-control input_cantidad" step="1" min="1" value="1" oninput="validity.valid||(value='');"></td>
-			<td>
-				<input type="number" class="form-control input_precio" step=".01" value="0.00" readonly>
-				<input type="hidden" class="input_precio_original" readonly>
+			<td class="px-4 py-3">
+				<div class="text-sm">
+					<label class="block text-sm">
+						<div class=" text-gray-500 focus-within:text-purple-600 dark:focus-within:text-purple-400">
+							<select id="product_options"
+								class="select_producto block w-24 mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input"
+								data-live-search="true">
+								${select_options}
+							</select>
+						</div>
+					</label>
+				</div>
 			</td>
-			<td><button type="button" class="btn btn-danger btn-sm" onclick="delete_row(this)"><i class="fa fa-trash"></i></button></td>
-		</tr>`
+			<td class="px-4 py-3 text-sm">
+				<label class="block text-sm">
+					<span class="text-gray-700 dark:text-gray-400">Cantidad</span>
+					<input
+						class="input_cantidad block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+						placeholder="0,00" step="1" min="1" value="1" oninput="validity.valid||(value='')" type="number"/>
+				</label>
+			</td>
+			<td class="px-4 py-3 text-sm">
+				<label class="block text-sm">
+					<span class="text-gray-700 dark:text-gray-400">Monto</span>
+					<input
+						class="input_precio block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+						placeholder="0,00" step=".01" value="0.00" readonly />
+						<input type="hidden" class="input_precio_original" readonly>
+				</label>
+			</td>
+			<td class="px-4 py-3">
+				<div class="flex items-center space-x-4 text-sm">
+					<button
+						class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray"
+						aria-label="Delete" onclick="delete_row(this)"
+				>
+				<svg
+					class=" w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+						<path fill-rule="evenodd"
+							d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+							clip-rule="evenodd"></path>
+						</svg>
+					</button>
+				</div>
+			</td>
+		</tr>
+		`
 	);
 
 	$('.selectpicker').selectpicker();
@@ -2468,7 +2500,7 @@ function servicio_reset_table(table_id) {
 }
 
 function delete_row(btn) {
-	btn.parentElement.parentElement.remove();
+	btn.parentElement.parentElement.parentElement.remove();
 }
 
 function reset_modal_agregar(form_id){
@@ -2517,61 +2549,3 @@ function bootstrapAlert(message, type) {
 		stackup_spacing: 10 // spacing between consecutively stacked growls.
 	});
 }
-
-// $('.btn-detalles').on('click', function () {
-// 	var venta_id = $(this).data('venta-id');
-
-// 	if(venta_id) {
-// 		fetch('/api/ventas/' + venta_id)
-// 		.then(response => response.json())
-// 		.then(venta => {
-// 			const cliente = venta.cliente[0];
-// 			document.querySelector('#venta_detalles_nroVenta').value = venta.id;
-// 			document.querySelector('#venta_detalles_fecha').value = venta.fecha;
-// 			document.querySelector('#venta_detalles_total').value = venta.total;
-// 			document.querySelector('#cliente_detalles_cedula').value = cliente.cedula;
-// 			document.querySelector('#cliente_detalles_num_tlf').value = cliente.num_tlf;
-// 			document.querySelector('#cliente_detalles_nombres').value = cliente.names;
-
-// 			const contenedor = document.getElementById('productos_informacion');
-// 			contenedor.innerHTML = '';
-// 			const productos = venta.productos[0];
-// 			var contador = 0;
-// 			productos.forEach((producto) => {
-// 				console.log(venta.cantidad[0][venta.detalles[0][contador].id]);
-
-// 				const titulo = document.createElement('h3');
-// 				titulo.textContent = producto.nombre;
-// 				const div_titulo = document.createElement('div');
-// 				div_titulo.classList.add('col-md-12', 'mb-3');
-// 				div_titulo.appendChild(titulo);
-// 				contenedor.appendChild(div_titulo);
-
-// 				generar_div("Nombre", producto.nombre, contenedor)
-// 				generar_div("Precio", producto.precio, contenedor)
-// 				generar_div("Descripcion", producto.descripcion, contenedor)
-// 				if (producto.extra.marca !== undefined) generar_div("Marca", producto.extra.marca, contenedor);
-				
-// 				generar_div("Cantidad Solicitada", venta.cantidad[0][venta.detalles[0][contador].id], contenedor);
-// 				contador++;
-
-// 				if(producto.extra.producto_type == 2){
-// 					generar_div("Medidas", producto.extra.medidas, contenedor)
-// 					generar_div("Calidad", producto.extra.calidad, contenedor)
-// 				}else if(producto.extra.producto_type == 3){
-// 					generar_div("Vizcocidad", producto.extra.vizcosidad, contenedor)
-// 					generar_div("Tipo", producto.extra.tipo, contenedor)
-// 				}
-
-// 			});
-// 		})
-// 		.catch(function(error) {
-// 			bootstrapAlert('Ha ocurrido un error al buscar el cliente', 'error');
-// 			console.log('Error buscar cliente: ' + error);
-// 		});
-
-// 		$('#detallesVentaModal').modal('show');
-// 	} else {
-// 		bootstrapAlert('No se ha seleccionado ningún cliente', 'info');
-// 	}
-// });
