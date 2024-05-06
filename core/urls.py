@@ -15,6 +15,8 @@ urlpatterns = [
     path("proveedores", views.proveedores, name="proveedores"),
     path("facturas", views.facturas, name="facturas"),
     path("usuarios", views.usuarios, name="usuarios"),
+    path("servicios-menu", views.servicios_menu, name="servicios-menu"),
+
     path("servicios", views.servicios, name="servicios"),
     path("registro-servicios", views.registroServicios, name="registro-servicios"),
     path("servicio-facturado", views.servicioFacturado, name="servicio-facturado"),

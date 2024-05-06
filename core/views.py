@@ -65,6 +65,10 @@ def servicios(request):
     return render(request, "core/servicios.html")
 
 @login_required
+def servicios_menu(request):
+    return render(request, "core/servicios-menu.html")
+
+@login_required
 def registroServicios(request):
     return render(request, "core/registro-servicios.html")
 
