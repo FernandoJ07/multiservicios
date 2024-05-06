@@ -45,6 +45,10 @@ def ventas(request):
     return render(request, "core/ventas.html")
 
 @login_required
+def ventas_menu(request):
+    return render(request, "core/ventas-menu.html")
+
+@login_required
 def registroVentas(request):
     return render(request, "core/registro-ventas.html")
 
