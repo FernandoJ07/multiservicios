@@ -11,7 +11,7 @@
 }
 
 .dataTables_wrapper .dataTables_filter input[type="search"] {
-    background: #1a1d22;
+    background: #c1c1c1;
     color: #e5e6ea;
     border-bottom: 1px white solid;
     padding: 2px 5px;
@@ -40,7 +40,7 @@
 }
 
 .dataTables_paginate span .current{
-    background-color: #7e3af2
+    background-color: #bfbb2c
 }
 
 

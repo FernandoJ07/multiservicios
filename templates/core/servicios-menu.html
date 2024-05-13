@@ -1,0 +1,25 @@
+{% extends 'core/base.html' %}
+
+{% block body %}
+<div class="container px-6 pb-12 mx-auto grid">
+    <div class="flex justify-between">
+        <h1 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">
+            Servicios
+        </h1>
+    </div>
+
+    <div style="display: flex; gap: 2rem; flex-direction: column; justify-content: center; justify-items: center;">
+        <a href="{% url 'servicios' %}" class="px-10 py-4 font-medium leading-5 text-center text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
+            Lista de servicios
+        </a>
+        
+        <a href="{% url 'registro-servicios' %}" class="px-10 py-4 font-medium leading-5 text-center text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
+            Gestión de servicios
+        </a>
+        
+        <a href="{% url 'servicio-facturado' %}" class="px-10 py-4 font-medium leading-5 text-center text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
+            Facturación de servicios
+        </a>
+    </div>
+</div>
+{% endblock %}

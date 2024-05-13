@@ -1179,17 +1179,17 @@ function fill_table(tipo) {
                         	<input type="hidden" name="cliente_id" value="${row.id}">
 
 							<div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
-								<p class="mb-2 text-xl font-bold text-gray-300 dark:text-gray-300">
+								<p class="mb-2 text-xl font-bold text-gray-200 dark:text-gray-200">
 									${row.shortname}
 								</p>
-								<p class="text-lg text-gray-200 dark:text-gray-200">
-									${row.cedula}
+								<p class="text-sm text-gray-200 dark:text-gray-200">
+									<span class="font-bold">Cédula</span>: ${row.cedula}
 								</p>
-								<p class="text-lg text-gray-200 dark:text-gray-200">
-									${row.num_tlf}
+								<p class="text-sm text-gray-200 dark:text-gray-200">
+									<span class="font-bold">Tlf</span>:${row.num_tlf}
 								</p>
-								<p class="text-lg text-gray-200 dark:text-gray-200">
-									${row.email}
+								<p class="text-sm text-gray-200 dark:text-gray-200">
+									<span class="font-bold">Email</span>:${row.email}
 								</p>
 							</div>
                         `;
@@ -1338,37 +1338,37 @@ function fill_table(tipo) {
 						
 						if(row.is_superuser){
 							html = `
-                            <input type="hidden" name="usuario_id" value="${row.id}">
+								<input type="hidden" name="usuario_id" value="${row.id}">
 
-                            <div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
-                                <p class="mb-2 text-xl font-bold text-gray-300 dark:text-gray-300">
-                                    ${row.username}
-                                </p>
-                                <p class="text-lg text-gray-200 dark:text-gray-200">
-                                    ${row.rol}
-                                </p>
-                            </div>
-                        `;
-						}
-						else{
+								<div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
+									<p class="mb-2 text-xl font-bold text-gray-200 dark:text-gray-200">
+										${row.username}
+									</p>
+									<p class="text-sm text-gray-200 dark:text-gray-200">
+										${row.rol}
+									</p>
+								</div>
+							`;
+						
+						} else {
 							html = `
-                            <input type="hidden" name="usuario_id" value="${row.id}">
+								<input type="hidden" name="usuario_id" value="${row.id}">
 
-                            <div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
-                                <p class="mb-2 text-xl font-bold text-gray-300 dark:text-gray-300">
-                                    ${row.shortname}
-                                </p>
-                                <p class="text-lg text-gray-200 dark:text-gray-200">
-                                    ${row.cedula}
-                                </p>
-                                <p class="text-lg text-gray-200 dark:text-gray-200">
-                                    ${row.num_tlf}
-                                </p>
-                                <p class="text-lg text-gray-200 dark:text-gray-200">
-                                    ${row.email}
-                                </p>
-                            </div>
-                        `;
+								<div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
+									<p class="mb-2 text-xl font-bold text-gray-200 dark:text-gray-200">
+										${row.shortname}
+									</p>
+									<p class="text-sm text-gray-200 dark:text-gray-200">
+										<span class="font-bold">Cédula</span>: ${row.cedula}
+									</p>
+									<p class="text-sm text-gray-200 dark:text-gray-200">
+										<span class="font-bold">Tlf</span>: ${row.num_tlf}
+									</p>
+									<p class="text-sm text-gray-200 dark:text-gray-200">
+										<span class="font-bold">Email</span>: ${row.email}
+									</p>
+								</div>
+							`;
 						}
                         
 
@@ -1518,17 +1518,17 @@ function fill_table(tipo) {
 							<input type="hidden" name="proveedor_id" value="${row.id}">
 
 							<div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
-								<p class="mb-2 text-xl font-bold text-gray-300 dark:text-gray-300">
+								<p class="mb-2 text-xl font-bold text-gray-200 dark:text-gray-200">
 									${row.shortname}
 								</p>
-								<p class="text-lg text-gray-200 dark:text-gray-200">
-									${row.rif}
+								<p class="text-sm text-gray-200 dark:text-gray-200">
+									<span class="font-bold">RIF</span>: ${row.rif}
 								</p>
-								<p class="text-lg text-gray-200 dark:text-gray-200">
-									${row.num_tlf}
+								<p class="text-sm text-gray-200 dark:text-gray-200">
+									<span class="font-bold">Tlf</span>: ${row.num_tlf}
 								</p>
-								<p class="text-lg text-gray-200 dark:text-gray-200">
-									${row.email}
+								<p class="text-sm text-gray-200 dark:text-gray-200">
+									<span class="font-bold">Email</span>: ${row.email}
 								</p>
 							</div>
 						`;
@@ -1738,14 +1738,14 @@ function fill_table(tipo) {
                         	<input type="hidden" name="producto_id" value="${row.id}">
 
 							<div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
-								<p class="mb-2 text-xl font-bold text-gray-300 dark:text-gray-300">
+								<p class="mb-2 text-xl font-bold text-gray-200 dark:text-gray-200">
 									${row.nombre}
 								</p>
-								<p class="text-lg text-gray-200 dark:text-gray-200">
-									Cantidad: ${row.cantidad}
+								<p class="text-sm text-gray-200 dark:text-gray-200">
+									<span class="font-bold">Cantidad</span>: ${row.cantidad}
 								</p>
-								<p class="text-lg text-gray-200 dark:text-gray-200">
-									Precio: ${row.precio}
+								<p class="text-sm text-gray-200 dark:text-gray-200">
+									<span class="font-bold">Precio</span>: ${row.precio}
 								</p>
 							</div>
                         `;
@@ -1878,20 +1878,20 @@ function fill_table(tipo) {
                             <input type="hidden" name="venta_id" value="${row.id}">
 
                             <div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
-                                <p class="mb-2 text-xl font-bold text-gray-300 dark:text-gray-300">
-                                    Nro de Venta:${row.id}
+                                <p class="mb-2 text-xl font-bold text-gray-200 dark:text-gray-200">
+                                    # Venta: ${row.id}
                                 </p>
-                                <p class="text-lg text-gray-200 dark:text-gray-200">
-                                    ${row.fecha}
+                                <p class="text-sm text-gray-200 dark:text-gray-200">
+									<span class="font-bold">Fecha</span>: ${row.fecha}
                                 </p>
-                                <p class="text-lg text-gray-200 dark:text-gray-200">
-                                    ${row.cliente[0].shortname}
+                                <p class="text-sm text-gray-200 dark:text-gray-200">
+									<span class="font-bold">Cliente</span>: ${row.cliente[0].shortname}
                                 </p>
-								<p class="text-lg text-gray-200 dark:text-gray-200">
-									${row.cliente[0].cedula}
+								<p class="text-sm text-gray-200 dark:text-gray-200">
+									<span class="font-bold">Cédula</span>: ${row.cliente[0].cedula}
 								</p>
-								<p class="text-lg text-gray-200 dark:text-gray-200">
-                                    Total: ${row.total}
+								<p class="text-sm text-gray-200 dark:text-gray-200">
+									<span class="font-bold">Total</span>: ${row.total}
                                 </p>
                             </div>
                         `;
@@ -2092,13 +2092,10 @@ function fill_table(tipo) {
 
 							<div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
 								<p class="mb-2 text-xl font-bold text-gray-300 dark:text-gray-300">
-									Codigo: ${row.codigo}
-								</p>
-								<p class="text-lg text-gray-200 dark:text-gray-200">
 									${row.nombre}
 								</p>
-								<p class="text-lg text-gray-200 dark:text-gray-200">
-									${row.precio}
+								<p class="text-sm text-gray-200 dark:text-gray-200">
+									<span class="font-bold">Precio</span>: ${row.precio}
 								</p>
 							</div>
 						`;
@@ -2218,17 +2215,17 @@ function fill_table(tipo) {
                             <input type="hidden" name="servicios_facturados_id" value="${row.id}">
 
                             <div class="flex flex-col p-4 bg-purple-600 rounded-lg shadow-xl dark:bg-purple-600">
-                                <p class="mb-2 text-xl font-bold text-gray-300 dark:text-gray-300">
-                                    ${row.cliente.cedula}
+                                <p class="mb-2 text-xl font-bold text-gray-200 dark:text-gray-200">
+                                    ${row.cliente.shortname}
                                 </p>
-                                <p class="text-lg text-gray-200 dark:text-gray-200">
-                                    ${row.cliente.fullname}
+                                <p class="text-sm text-gray-200 dark:text-gray-200">
+									<span class="font-bold">Cédula</span>: ${row.cliente.cedula}
                                 </p>
-                                <p class="text-lg text-gray-200 dark:text-gray-200">
-                                    ${row.cliente.num_tlf}
+                                <p class="text-sm text-gray-200 dark:text-gray-200">
+									<span class="font-bold">Tlf:</span>: ${row.cliente.num_tlf}
                                 </p>
-								<p class="text-lg text-gray-200 dark:text-gray-200">
-									Monto: ${row.precio}
+								<p class="text-sm text-gray-200 dark:text-gray-200">
+									<span class="font-bold">Total</span>: ${row.precio}
 								</p>
                             </div>
                         `;
