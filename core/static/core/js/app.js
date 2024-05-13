@@ -1162,7 +1162,7 @@ function fill_table(tipo) {
             'destroy': true,
             'lengthChange': false,
             'deferRender': true,
-            'language': { 'url': '/media/datatables-languages/es-ES_custom.json' },
+            'language': {'url': '/media/datatables-languages/es-ES_default.json'},
             'ajax': {
                 'url': '/api/clientes',
                 'type': 'GET',
