@@ -5,17 +5,24 @@ from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
+from django.db.models import Sum, Count, Avg, F
+from django.db.models.functions import TruncMonth
+from datetime import date
 
 from .models import *
 
 @login_required
 def index(request):
+
+    mes_actal = date.today().month
+
     data = {
-            'productos_total': len(Producto.objects.all()),
-            'ventas_hoy': len(Venta.objects.filter(fecha=timezone.now().date())),
-            'ventas_ayer': len(Venta.objects.filter(fecha=timezone.now().date()-timedelta(days=1))),
-            'ventas_total': len(Venta.objects.all()),
-            'ventas': Venta.objects.all().order_by('-fecha')[:5]
+            'productos_total': Inventario.objects.aggregate(total=Sum('cantidad'))['total'],
+            'ventas_mensuales': Venta.objects.filter(fecha__month=mes_actal).count(),
+            'ingresos_mensuales': Venta.objects.filter(fecha__month=mes_actal).aggregate(total_ventas=Sum('total'))['total_ventas'] or 0.0,
+            'servicios_facturados': ServicioFacturacion.objects.filter(fecha_emision__month=mes_actal).count(),
+            'ingresos_servicios': ServicioFacturacion.objects.aggregate(total=Sum('servicios__precio'))['total'],
+            'ultimas_ventas': Venta.objects.all().order_by('-fecha')[:8]
     }
     return render(request, "core/index.html", data )
 
